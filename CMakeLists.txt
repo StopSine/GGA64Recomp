@@ -118,6 +118,22 @@ target_sources(PatchesLib PRIVATE
 
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
+# Which game this binary is built for.
+#
+# Only one game can be linked at a time: each recompilation defines its own
+# recomp_entrypoint and get_entrypoint_address, so RecompiledFuncs/ and
+# RecompiledPatches/ must match the selected game. The patch sources are also
+# game specific, since a patch names the function it replaces.
+option(GOEMON_GAME_GGA "Build for Goemon's Great Adventure instead of Mystical Ninja" OFF)
+
+if(GOEMON_GAME_GGA)
+    set(PATCHES_DIR  ${CMAKE_SOURCE_DIR}/patches_gga)
+    set(PATCHES_TOML gga.patches.toml)
+else()
+    set(PATCHES_DIR  ${CMAKE_SOURCE_DIR}/patches)
+    set(PATCHES_TOML patches.toml)
+endif()
+
 # Build patches elf
 if(NOT DEFINED PATCHES_C_COMPILER)
     set(PATCHES_C_COMPILER clang)
@@ -129,30 +145,34 @@ endif()
 
 add_custom_target(PatchesBin
     COMMAND ${CMAKE_COMMAND} -E env CC=${PATCHES_C_COMPILER} LD=${PATCHES_LD} make
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
-    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/build/patches.elf
+    WORKING_DIRECTORY ${PATCHES_DIR}
+    BYPRODUCTS ${PATCHES_DIR}/build/patches.elf
 )
 
 # Generate patches_bin.c from patches.bin
 add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
-    COMMAND file_to_c ${CMAKE_SOURCE_DIR}/patches/patches.bin mm_patches_bin ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.h
-    DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
+    COMMAND file_to_c ${PATCHES_DIR}/patches.bin mm_patches_bin ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.h
+    DEPENDS ${PATCHES_DIR}/patches.bin
 )
 
 # Recompile patches elf into patches.c and patches.bin
 add_custom_command(OUTPUT
-                       ${CMAKE_SOURCE_DIR}/patches/patches.bin
+                       ${PATCHES_DIR}/patches.bin
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/recomp_overlays.inl
                        ${CMAKE_SOURCE_DIR}/RecompiledPatches/funcs.h
                    # TODO: Look into why modifying patches requires two builds to take
-                   COMMAND ./N64Recomp patches.toml
+                   COMMAND ./N64Recomp ${PATCHES_TOML}
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                   DEPENDS ${CMAKE_SOURCE_DIR}/patches/build/patches.elf
+                   DEPENDS ${PATCHES_DIR}/build/patches.elf
 )
 
 # Main executable
 add_executable(Goemon64Recompiled)
+
+if(GOEMON_GAME_GGA)
+    target_compile_definitions(Goemon64Recompiled PRIVATE GOEMON_GAME_GGA)
+endif()
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp

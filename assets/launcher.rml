@@ -18,8 +18,8 @@
 					<div class="launcher__title-quadrant">
 						<button class="subtitle-title" disabled>
 							<div><h3>Goemon 64: Recompiled</h3></div>
-							<div><h1>Goemon's Great Adventure</h1></div>
-							<div class="subtitle-title__disclaimer">Coming Soon™</div>
+							<div><h1>{{other_game_title}}</h1></div>
+							<div class="subtitle-title__disclaimer">{{other_game_note}}</div>
 						</button>
 					</div>
 					<div class="launcher__content-quadrant"></div>
@@ -31,7 +31,7 @@
 					<div class="launcher__title-quadrant launcher__title-quadrant--right">
 						<button class="subtitle-title subtitle-title--right" selected>
 							<div><h3>Goemon 64: Recompiled</h3></div>
-							<div><h1>Mystical Ninja Starring Goemon</h1></div>
+							<div><h1>{{active_game_title}}</h1></div>
 						</button>
 					</div>
 					<div class="launcher__content-quadrant">

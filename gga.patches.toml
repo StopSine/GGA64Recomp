@@ -1,0 +1,27 @@
+# Config file for recompiling patches for the Goemon's Great Adventure NTSC-U Recompilation.
+#
+# The Mystical Ninja equivalent is patches.toml. The two differ only in which
+# patch sources are built and which symbol files resolve their references;
+# the patch sources themselves are game specific, since a patch names the
+# function it replaces.
+
+[input]
+# Paths are relative to the location of this config file.
+elf_path = "patches_gga/build/patches.elf"
+output_func_path = "RecompiledPatches"
+single_file_output = true
+# Allow absolute symbols to be used as jump targets.
+use_absolute_symbols = true
+# Point the recompiler at the symbol files so that it can resolve relocations during recompilation.
+# These are produced by --dump-context over the linked ELF; see
+# lib/gga/docs/overlay_loader.md for how that ELF is built.
+func_reference_syms_file = "lib/gga/config/usa/gga.elf.syms.toml"
+data_reference_syms_files = [ "lib/gga/config/usa/gga.elf.datasyms.toml" ]
+# Tell the recompiler to write the output binary. Doing this instead of using objcopy allows the recompiler to patch MIPS32 relocs.
+output_binary_path = "patches_gga/patches.bin"
+# Do not emit warnings for unpaired LO16 values, as clang produces many of them.
+unpaired_lo16_warnings = false
+# Allow exporting functions and events for mods to use.
+allow_exports = true
+# Enable strict patch mode, validates that patched symbols exist and that non-patch functions aren't symbols.
+strict_patch_mode = true
