@@ -578,6 +578,11 @@ void reorder_texture_pack(recomp::mods::ModContext&) {
 #define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)
 
 int main(int argc, char** argv) {
+    // On Windows stderr is buffered when redirected to a file, so diagnostics
+    // are lost if the process aborts. Keep it unbuffered so a crash still
+    // leaves the log that explains it.
+    setvbuf(stderr, nullptr, _IONBF, 0);
+
     (void)argc;
     (void)argv;
     recomp::Version project_version{};
