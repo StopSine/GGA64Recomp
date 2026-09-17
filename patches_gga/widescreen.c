@@ -21,24 +21,35 @@ void func_800D3FF0_58F210(void *arg0, void *callback, s32 arg2, s32 arg3);
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 
-// The game insets the scissor by 16 pixels either side, presumably for overscan.
+// The game insets its scissor by 16 pixels either side and 8 top and bottom,
+// for CRT overscan. The viewport D_80108990_5C3BB0 covers the whole framebuffer
+// either way, so dropping the inset reveals geometry that is already drawn.
 #define INSET_ULX 16
+#define INSET_ULY 8
 #define INSET_LRX 304
 
+// Two lower bounds are in use: level setup and the fade's raised state scissor
+// to 198, everything else to 232. Both are dropped, which also centres the
+// scissor on the viewport's centre row rather than 17 pixels above it.
+#define INSET_LRY 232
+#define INSET_LRY_LEVEL 198
+
 // The fade's two G_SETSCISSOR words. A scissor packs its corners as 10.2 fixed
-// point, so these are 16, 8, 304, 232 shipped and 0, 8, 320, 232 widened.
+// point, so these are 16, 8, 304, 232 shipped and 0, 0, 320, 240 widened.
 #define FADE_SCISSOR_HI 4
 #define FADE_SCISSOR_LO 5
 
 #define FADE_SCISSOR_HI_NARROW 0xED040020u
-#define FADE_SCISSOR_HI_WIDE   0xED000020u
+#define FADE_SCISSOR_HI_WIDE   0xED000000u
 #define FADE_SCISSOR_LO_NARROW 0x004C03A0u
-#define FADE_SCISSOR_LO_WIDE   0x005003A0u
+#define FADE_SCISSOR_LO_WIDE   0x005003C0u
 
 static const float g_original_aspect_ratio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
 
-// The last scissor this widened, so a switch back to 4:3 can be undone safely.
+// What this last wrote and what was there before, so a switch back to 4:3 can
+// restore the exact rectangle rather than guessing at which bounds it had.
 static u16 g_widened[4];
+static u16 g_original[4];
 static int g_have_widened = 0;
 
 static int widescreen_active(void) {
@@ -62,15 +73,31 @@ static void set_fade_scissor(void) {
 }
 
 // RT64 only widens a projection whose scissor spans the framebuffer width, so
-// the 16 pixel inset is what letterboxes the game. Restoring checks all four
-// bounds, since a 0..320 scissor is legitimate on the logo and menu screens.
+// the horizontal inset is what letterboxes the game, and the vertical inset is
+// the padding above and below. Dropping both fills the screen and leaves the
+// scissor at exactly 4:3, well clear of RT64's 10% aspect detection threshold.
+// Restoring compares all four bounds before putting the original back, since a
+// full screen scissor is legitimate on the logo and menu screens.
 static void apply_scissor(void) {
     set_fade_scissor();
 
     if (widescreen_active()) {
         if (GFX_SCISSOR_ULX == INSET_ULX && GFX_SCISSOR_LRX == INSET_LRX) {
+            g_original[0] = GFX_SCISSOR_ULX;
+            g_original[1] = GFX_SCISSOR_ULY;
+            g_original[2] = GFX_SCISSOR_LRX;
+            g_original[3] = GFX_SCISSOR_LRY;
+
             GFX_SCISSOR_ULX = 0;
             GFX_SCISSOR_LRX = SCREEN_WIDTH;
+
+            if (GFX_SCISSOR_ULY == INSET_ULY) {
+                GFX_SCISSOR_ULY = 0;
+            }
+
+            if (GFX_SCISSOR_LRY == INSET_LRY || GFX_SCISSOR_LRY == INSET_LRY_LEVEL) {
+                GFX_SCISSOR_LRY = SCREEN_HEIGHT;
+            }
 
             g_widened[0] = GFX_SCISSOR_ULX;
             g_widened[1] = GFX_SCISSOR_ULY;
@@ -82,8 +109,10 @@ static void apply_scissor(void) {
     else if (g_have_widened) {
         if (GFX_SCISSOR_ULX == g_widened[0] && GFX_SCISSOR_ULY == g_widened[1] &&
             GFX_SCISSOR_LRX == g_widened[2] && GFX_SCISSOR_LRY == g_widened[3]) {
-            GFX_SCISSOR_ULX = INSET_ULX;
-            GFX_SCISSOR_LRX = INSET_LRX;
+            GFX_SCISSOR_ULX = g_original[0];
+            GFX_SCISSOR_ULY = g_original[1];
+            GFX_SCISSOR_LRX = g_original[2];
+            GFX_SCISSOR_LRY = g_original[3];
         }
 
         g_have_widened = 0;
@@ -127,11 +156,11 @@ RECOMP_PATCH void func_800DEC40_599E60(s32 mode) {
     u16 **flag_holder = (u16 **)(scene + 0x30);
 
     if (mode == 1) {
-        set_scissor(INSET_ULX, 8, INSET_LRX, 198);
+        set_scissor(INSET_ULX, INSET_ULY, INSET_LRX, INSET_LRY_LEVEL);
         **flag_holder |= 0x2;
     }
     else {
-        set_scissor(INSET_ULX, 8, INSET_LRX, 232);
+        set_scissor(INSET_ULX, INSET_ULY, INSET_LRX, INSET_LRY);
         **flag_holder &= ~0x2;
     }
 }
