@@ -21,7 +21,6 @@ This is a work in progress, not a finished port. Goemon's Great Adventure has no
 * The logo screens and the main menu are still pillarboxed in widescreen. Their scissors are already full width, so this is unstretched 2D texture rectangles rather than clipping.
 * Entities activate, and enemies respawn, based on distance rather than what is on screen, so in widescreen you can see inactive enemies near the edges and respawns can happen in view. Widening the game's own field of view does not fix this; the activation logic never consults the projection.
 * Rumble is unavailable. The Controller Pak and the Rumble Pak occupy the same slot and saving takes priority.
-* The RSP audio microcode is still extracted from a Mystical Ninja ROM (see `aspMain.toml`); whether this game ships the same microcode has not been verified.
 
 ## System Requirements
 A GPU supporting Direct3D 12.0 (Shader Model 6), Vulkan 1.2, or Metal Argument Buffers Tier 2 support is required to run this project. The oldest GPUs that should be supported for each vendor are:

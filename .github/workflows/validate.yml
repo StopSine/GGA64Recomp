@@ -8,10 +8,8 @@
 #
 #   lib/gga/config/usa/baserom.decompressed.z64   for gga.recomp.toml, whose
 #                                                 paths resolve relative to the
-#                                                 config file itself
-#   mnsg.z64                                      for aspMain.toml, which still
-#                                                 takes the RSP audio microcode
-#                                                 from a Mystical Ninja ROM
+#                                                 config file itself, and for
+#                                                 aspMain.toml
 #
 # Everything else the recompiler reads is committed: the symbol files live in
 # the lib/gga submodule, so there is no separate symbols repository.

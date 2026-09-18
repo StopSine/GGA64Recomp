@@ -1,15 +1,17 @@
 # RSP audio microcode recompilation, producing rsp/aspMain.cpp.
 #
-# NOTE: the offset below is into the Mystical Ninja ROM, which is where this
-# microcode was originally extracted from, and the generated rsp/aspMain.cpp is
-# compiled into the Goemon's Great Adventure build as-is. Whether GGA ships the
-# same audio microcode has not been verified. If GGA's differs, this needs
-# re-extracting from the GGA ROM at its own offset. rsp/aspMain.cpp is not
-# tracked, so a fresh clone has to run RSPRecomp over a ROM to produce it.
-text_offset = 0x546B0
+# Goemon's Great Adventure ships the same aspMain as Mystical Ninja: all 0xE20
+# bytes are identical, at 0x264D0 here against 0x546B0 there, and it appears
+# exactly once. This used to read the Mystical Ninja ROM because that is where
+# the microcode was first extracted from, which meant a build needed a second
+# game's ROM for nothing.
+#
+# rsp/aspMain.cpp is not tracked, so a fresh clone runs RSPRecomp over this to
+# produce it.
+text_offset = 0x264D0
 text_size = 0xE20
 text_address = 0x04001080
-rom_file_path = "mnsg.z64"
+rom_file_path = "lib/gga/config/usa/baserom.decompressed.z64"
 output_file_path = "rsp/aspMain.cpp"
 output_function_name = "aspMain"
 extra_indirect_branch_targets = [
