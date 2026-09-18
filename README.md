@@ -97,5 +97,3 @@ Instructions on how to build this project can be found in the [BUILDING.md](BUIL
 * [moodycamel::ConcurrentQueue](https://github.com/cameron314/concurrentqueue) for semaphores and fast, lock-free MPMC queues
 * [Gamepad Motion Helpers](https://github.com/JibbSmart/GamepadMotionHelpers) for sensor fusion and calibration algorithms
 * [Ares emulator](https://github.com/ares-emulator/ares) for RSP vector instruction reference implementations, used in RSP recompilation
-
-Special thanks to [Jingleboy of Goemon International](https://goemoninternational.com) for designing and drawing the icon/background graphic!
