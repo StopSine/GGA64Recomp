@@ -59,7 +59,7 @@ Gameplay, graphics, input and audio settings are all configurable from the in-ga
 Running natively removes most of the input latency and load times of the original hardware.
 
 #### Linux and Steam Deck Support
-A Linux binary as well as a Flatpak can be built for most up-to-date distros, including the Steam Deck. To play on Steam Deck, extract the Linux build onto your deck. Then, in desktop mode, right click the Goemon64Recompiled executable file and select "Add to Steam". From there you can return to Gaming mode and configure the controls as needed.
+A Linux binary as well as a Flatpak can be built for most up-to-date distros, including the Steam Deck. To play on Steam Deck, extract the Linux build onto your deck. Then, in desktop mode, right click the GGA64Recompiled executable file and select "Add to Steam". From there you can return to Gaming mode and configure the controls as needed.
 
 ## FAQ
 
@@ -77,9 +77,9 @@ This project provides mouse aiming as a way to allow using gyro on Steam Deck, a
 You'll probably also want to change the default behavior so that you don't need to be touching the right stick to allow gyro input. To do so, click on the Gear icon to the right of "Gyro Behavior" and ensure that "Gyro Activation Buttons" is set to "None Selected (Gyro Always On)." If this isn't the case, then select that option and then press "Select None" in the following menu.
 
 #### Where is the savefile stored?
-- Windows: `%LOCALAPPDATA%\Goemon64Recompiled\saves`
-- Linux: `~/.config/Goemon64Recompiled/saves`
-- macOS: `~/Library/Application Support/Goemon64Recompiled/saves`
+- Windows: `%LOCALAPPDATA%\GGA64Recomp\saves`
+- Linux: `~/.config/GGA64Recomp/saves`
+- macOS: `~/Library/Application Support/GGA64Recomp/saves`
 
 #### How do I choose a different ROM?
 **You don't.** This project is only a port of Goemon's Great Adventure, and it will only accept one specific ROM: the US version of the N64 release. ROMs in formats other than .z64 will be automatically converted, as long as it is the correct ROM. **It is not an emulator and it cannot run any arbitrary ROM.**

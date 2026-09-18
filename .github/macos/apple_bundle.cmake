@@ -2,10 +2,10 @@
 set(ENTITLEMENTS_FILE ${CMAKE_SOURCE_DIR}/.github/macos/entitlements.plist)
 
 # Set bundle properties
-set_target_properties(Goemon64Recompiled PROPERTIES
+set_target_properties(GGA64Recompiled PROPERTIES
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_BUNDLE_NAME "Goemon64Recompiled"
-        MACOSX_BUNDLE_GUI_IDENTIFIER "com.github.goemon64recompiled"
+        MACOSX_BUNDLE_BUNDLE_NAME "GGA64Recompiled"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.github.gga64recompiled"
         MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
         MACOSX_BUNDLE_ICON_FILE "AppIcon.icns"
@@ -46,16 +46,16 @@ set_source_files_properties(${ICNS_FILE} PROPERTIES
 )
 
 # Add the icns file to the executable target
-target_sources(Goemon64Recompiled PRIVATE ${ICNS_FILE})
+target_sources(GGA64Recompiled PRIVATE ${ICNS_FILE})
 
-# Ensure Goemon64Recompiled depends on create_icns
-add_dependencies(Goemon64Recompiled create_icns)
+# Ensure GGA64Recompiled depends on create_icns
+add_dependencies(GGA64Recompiled create_icns)
 
 # Configure Info.plist
 configure_file(${CMAKE_SOURCE_DIR}/.github/macos/Info.plist.in ${CMAKE_BINARY_DIR}/Info.plist @ONLY)
 
 # Install the app bundle
-install(TARGETS Goemon64Recompiled BUNDLE DESTINATION .)
+install(TARGETS GGA64Recompiled BUNDLE DESTINATION .)
 
 # Ensure the entitlements file exists
 if(NOT EXISTS ${ENTITLEMENTS_FILE})
@@ -63,24 +63,24 @@ if(NOT EXISTS ${ENTITLEMENTS_FILE})
 endif()
 
 # Post-build steps for macOS bundle
-add_custom_command(TARGET Goemon64Recompiled POST_BUILD
+add_custom_command(TARGET GGA64Recompiled POST_BUILD
     # Copy and fix frameworks first
     COMMAND ${CMAKE_COMMAND} -D CMAKE_BUILD_TYPE=$<CONFIG> -D CMAKE_GENERATOR=${CMAKE_GENERATOR} -P ${CMAKE_SOURCE_DIR}/.github/macos/fixup_bundle.cmake
 
     # Copy all resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/temp_assets
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/temp_assets/scss
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/temp_assets $<TARGET_BUNDLE_DIR:Goemon64Recompiled>/Contents/Resources/assets
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/temp_assets $<TARGET_BUNDLE_DIR:GGA64Recompiled>/Contents/Resources/assets
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/temp_assets
 
     # Copy controller database
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt $<TARGET_BUNDLE_DIR:Goemon64Recompiled>/Contents/Resources/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/recompcontrollerdb.txt $<TARGET_BUNDLE_DIR:GGA64Recompiled>/Contents/Resources/
 
     # Set RPATH
-    COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks/" $<TARGET_BUNDLE_DIR:Goemon64Recompiled>/Contents/MacOS/Goemon64Recompiled
+    COMMAND install_name_tool -add_rpath "@executable_path/../Frameworks/" $<TARGET_BUNDLE_DIR:GGA64Recompiled>/Contents/MacOS/GGA64Recompiled
 
     # Sign the bundle
-    COMMAND codesign --verbose=4 --options=runtime --no-strict --sign - --entitlements ${ENTITLEMENTS_FILE} --deep --force $<TARGET_BUNDLE_DIR:Goemon64Recompiled>
+    COMMAND codesign --verbose=4 --options=runtime --no-strict --sign - --entitlements ${ENTITLEMENTS_FILE} --deep --force $<TARGET_BUNDLE_DIR:GGA64Recompiled>
 
     COMMENT "Performing post-build steps for macOS bundle"
     VERBATIM

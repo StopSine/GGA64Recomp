@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Goemon's Great Adventure: Recompiled
+Exec=/app/bin/GGA64Recompiled
+Type=Application
+Icon=io.github.stopsine.gga64recomp
+Categories=Game;
+Comment=Static recompilation of Goemon's Great Adventure for PC.
+MimeType=x-scheme-handler/gga64recomp

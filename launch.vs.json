@@ -5,8 +5,8 @@
     {
       "type": "default",
       "project": "CMakeLists.txt",
-      "projectTarget": "Goemon64Recompiled.exe",
-      "name": "Goemon64Recompiled.exe",
+      "projectTarget": "GGA64Recompiled.exe",
+      "name": "GGA64Recompiled.exe",
       "currentDir": "${workspaceRoot}",
       "args": [ "--show-console" ]
     }

@@ -4,7 +4,7 @@ if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum OS X deployment version")
 endif()
 
-project(Goemon64Recompiled LANGUAGES C CXX)
+project(GGA64Recompiled LANGUAGES C CXX)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -155,7 +155,7 @@ add_custom_command(OUTPUT
 )
 
 # Main executable
-add_executable(Goemon64Recompiled)
+add_executable(GGA64Recompiled)
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
@@ -217,7 +217,7 @@ if (APPLE)
     list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/src/main/support_apple.mm)
 endif()
 
-target_include_directories(Goemon64Recompiled PRIVATE
+target_include_directories(GGA64Recompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/N64Recomp/include
     ${CMAKE_SOURCE_DIR}/lib/concurrentqueue
@@ -238,13 +238,13 @@ target_include_directories(Goemon64Recompiled PRIVATE
 )
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
-    target_compile_options(Goemon64Recompiled PRIVATE
+    target_compile_options(GGA64Recompiled PRIVATE
         -march=nehalem
         -fno-strict-aliasing
         -fms-extensions
     )
 else()
-    target_compile_options(Goemon64Recompiled PRIVATE
+    target_compile_options(GGA64Recompiled PRIVATE
         -fno-strict-aliasing
         -fms-extensions
     )
@@ -252,11 +252,11 @@ endif()
 
 if (MSVC)
     # Disable identical code folding, since this breaks mod function patching as multiple functions can get merged into one.
-    target_link_options(Goemon64Recompiled PRIVATE /OPT:NOICF)
+    target_link_options(GGA64Recompiled PRIVATE /OPT:NOICF)
 elseif (APPLE)
     # Use a wrapper around ld64 that respects segprot's `max_prot` value in order
     # to make our executable memory writable (required for mod function patching)
-    target_link_options(Goemon64Recompiled PRIVATE
+    target_link_options(GGA64Recompiled PRIVATE
         "-fuse-ld=${CMAKE_SOURCE_DIR}/.github/macos/ld64"
     )
 endif()
@@ -276,23 +276,23 @@ if (WIN32)
         URL https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/SDL2-devel-${SDL2_VERSION}-VC.zip
     )
     FetchContent_MakeAvailable(sdl2)
-    target_include_directories(Goemon64Recompiled PRIVATE
+    target_include_directories(GGA64Recompiled PRIVATE
         ${sdl2_SOURCE_DIR}/include
     )
-    target_link_directories(Goemon64Recompiled PRIVATE
+    target_link_directories(GGA64Recompiled PRIVATE
         ${sdl2_SOURCE_DIR}/lib/x64
     )
 
     # Copy SDL2 and dxc DLLs to output folder as post build step
-    add_custom_command(TARGET Goemon64Recompiled POST_BUILD
+    add_custom_command(TARGET GGA64Recompiled POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${sdl2_SOURCE_DIR}/lib/x64/SDL2.dll"
             "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxil.dll"
             "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxcompiler.dll"
-            $<TARGET_FILE_DIR:Goemon64Recompiled>)
+            $<TARGET_FILE_DIR:GGA64Recompiled>)
 
     set_target_properties(
-        Goemon64Recompiled
+        GGA64Recompiled
         PROPERTIES
             LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE"
             LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
@@ -300,19 +300,19 @@ if (WIN32)
             LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
     )
 
-    target_sources(Goemon64Recompiled PRIVATE ${CMAKE_SOURCE_DIR}/icons/app.rc)
-    target_link_libraries(Goemon64Recompiled PRIVATE SDL2 Winmm.lib)
+    target_sources(GGA64Recompiled PRIVATE ${CMAKE_SOURCE_DIR}/icons/app.rc)
+    target_link_libraries(GGA64Recompiled PRIVATE SDL2 Winmm.lib)
 endif()
 
 if (APPLE)
     find_package(SDL2 REQUIRED)
-    target_include_directories(Goemon64Recompiled PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_include_directories(GGA64Recompiled PRIVATE ${SDL2_INCLUDE_DIRS})
 
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads REQUIRED)
 
-    target_link_libraries(Goemon64Recompiled PRIVATE ${CMAKE_DL_LIBS} Threads::Threads SDL2::SDL2)
+    target_link_libraries(GGA64Recompiled PRIVATE ${CMAKE_DL_LIBS} Threads::Threads SDL2::SDL2)
 
     include(${CMAKE_SOURCE_DIR}/.github/macos/apple_bundle.cmake)
 endif()
@@ -327,12 +327,12 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
         COMMAND file_to_c ${CMAKE_SOURCE_DIR}/icons/512.png icon_bytes ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.h
         DEPENDS ${CMAKE_SOURCE_DIR}/icons/512.png
     )
-    target_sources(Goemon64Recompiled PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c)
+    target_sources(GGA64Recompiled PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c)
 
     message(STATUS "SDL2_FOUND = ${SDL2_FOUND}")
     message(STATUS "SDL2_INCLUDE_DIRS = ${SDL2_INCLUDE_DIRS}")
 
-    target_include_directories(Goemon64Recompiled PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_include_directories(GGA64Recompiled PRIVATE ${SDL2_INCLUDE_DIRS})
 
     find_package(Freetype REQUIRED)
 
@@ -341,16 +341,16 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     message(STATUS "FREETYPE_LIBRARIES = ${FREETYPE_LIBRARIES}")
 
     include_directories(${FREETYPE_LIBRARIES})
-    target_link_libraries(Goemon64Recompiled PRIVATE ${FREETYPE_LIBRARIES} SDL2::SDL2)
+    target_link_libraries(GGA64Recompiled PRIVATE ${FREETYPE_LIBRARIES} SDL2::SDL2)
 
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads REQUIRED)
 
-    target_link_libraries(Goemon64Recompiled PRIVATE "-latomic -static-libstdc++" ${CMAKE_DL_LIBS} Threads::Threads)
+    target_link_libraries(GGA64Recompiled PRIVATE "-latomic -static-libstdc++" ${CMAKE_DL_LIBS} Threads::Threads)
 endif()
 
-target_link_libraries(Goemon64Recompiled PRIVATE
+target_link_libraries(GGA64Recompiled PRIVATE
     PatchesLib
     RecompiledFuncs
     librecomp
@@ -394,8 +394,8 @@ else()
     endif()
 endif()
 
-build_vertex_shader(Goemon64Recompiled "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
-build_pixel_shader(Goemon64Recompiled "shaders/InterfacePS.hlsl" "shaders/InterfacePS.hlsl")
+build_vertex_shader(GGA64Recompiled "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")
+build_pixel_shader(GGA64Recompiled "shaders/InterfacePS.hlsl" "shaders/InterfacePS.hlsl")
 
 # Embed all .nrm files in the "mods" directory
 file(GLOB NRM_FILES "${CMAKE_SOURCE_DIR}/mods/*.nrm")
@@ -416,11 +416,11 @@ foreach(NRM_FILE ${NRM_FILES})
     list(APPEND GENERATED_NRM_SOURCES ${OUT_C})
 endforeach()
 
-target_sources(Goemon64Recompiled PRIVATE ${GENERATED_NRM_SOURCES})
+target_sources(GGA64Recompiled PRIVATE ${GENERATED_NRM_SOURCES})
 
-target_sources(Goemon64Recompiled PRIVATE ${SOURCES})
+target_sources(GGA64Recompiled PRIVATE ${SOURCES})
 
-set_property(TARGET Goemon64Recompiled PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+set_property(TARGET GGA64Recompiled PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
     execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink

@@ -24,7 +24,7 @@
 					</div>
 					<div class="launcher__title-quadrant launcher__title-quadrant--right">
 						<button class="subtitle-title subtitle-title--right" selected>
-							<div><h3>Goemon 64: Recompiled</h3></div>
+							<div><h3>GGA 64: Recompiled</h3></div>
 							<div><h1>{{active_game_title}}</h1></div>
 						</button>
 					</div>

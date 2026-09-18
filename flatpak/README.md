@@ -5,11 +5,11 @@ make -C patches CC=clang LD=ld.lld
 
 Build
 ```sh
-flatpak-builder --force-clean --user --install-deps-from=flathub --repo=repo --install builddir io.github.klorfmorf.goemon64recomp.json
+flatpak-builder --force-clean --user --install-deps-from=flathub --repo=repo --install builddir io.github.stopsine.gga64recomp.json
 ```
 
 Bundle
 ```sh
-flatpak build-bundle repo io.github.klorfmorf.goemon64recomp.flatpak io.github.klorfmorf.goemon64recomp --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
+flatpak build-bundle repo io.github.stopsine.gga64recomp.flatpak io.github.stopsine.gga64recomp --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
 ```
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.klorfmorf.goemon64recomp</id>
+  <id>io.github.stopsine.gga64recomp</id>
   
-  <name>Goemon 64: Recompiled</name>
+  <name>Goemon's Great Adventure: Recompiled</name>
   <summary>Static recompilation of Goemon's Great Adventure for PC.</summary>
   
   <metadata_license>CC0-1.0</metadata_license>
@@ -21,9 +21,9 @@
 
       The original game is required to run this project.
 
-      https://github.com/klorfmorf/Goemon64Recomp
+      https://github.com/StopSine/GGA64Recomp
     </p>
   </description>
   
-  <launchable type="desktop-id">io.github.klorfmorf.goemon64recomp.desktop</launchable>
+  <launchable type="desktop-id">io.github.stopsine.gga64recomp.desktop</launchable>
 </component>
