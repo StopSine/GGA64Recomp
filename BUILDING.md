@@ -41,11 +41,18 @@ You will need a decompressed copy of the NTSC-U Goemon's Great Adventure ROM bef
 Place your retail US ROM at `lib/gga/config/usa/baserom.z64`, then from `lib/gga` run:
 
 ```bash
-make setup   # decompresses the ROM and extracts assets
-make         # builds the disassembly and the linked ELF the symbols come from
+uv run python tools/rommy.py decompress \
+    --input config/usa/baserom.z64 \
+    --output config/usa/baserom.decompressed.z64 \
+    --manifest config/usa/rommy.yaml --pad
 ```
 
-The recompiler expects the decompressed ROM at `lib/gga/config/usa/baserom.decompressed.z64`, which `make setup` produces. See `lib/gga/docs/overlay_loader.md` for how the symbol files are generated and why the overlays are handled the way they are.
+That is all that is needed to build, because the symbol files the recompiler reads (`config/usa/gga.elf.syms.toml` and `gga.elf.datasyms.toml`) are committed.
+
+Regenerating those symbols is only necessary if the disassembly itself changes, and it is a separate three-step process: split the ROM with `uv run splat split config/usa/gga.splat.yaml`, assemble and link the ELF with `tools/build_elf.sh` (the `--emit-relocs` there is the point — it preserves the relocation records that disassembly alone cannot provide), then run N64Recomp's `--dump-context` over that ELF using `config/usa/gga.dump_context.toml`. See `lib/gga/docs/overlay_loader.md` for why the overlays need this treatment.
+
+> [!NOTE]
+> `lib/gga` is a fork of the Mystical Ninja decompilation project and still carries that project's `Makefile`, which builds Mystical Ninja rather than this game. Do not run `make` there expecting Goemon's Great Adventure; use the commands above.
 
 ## 4. Generating the C code
 
