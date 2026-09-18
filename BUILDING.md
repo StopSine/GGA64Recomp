@@ -80,3 +80,16 @@ Voilà! You should now have a `GGA64Recompiled` executable in the build director
 
 > [!IMPORTANT]  
 > In the game itself, you should be using a standard ROM, not the decompressed one.
+
+## Continuous integration
+
+`.github/workflows/validate.yml` runs the same steps as above. Everything the recompiler reads is committed — the symbol files live in the `lib/gga` submodule, so there is no separate symbols repository — with one exception: the ROM, which cannot be in a public repository.
+
+Each job therefore clones a private repository first, using the `G64RS_REPO_WITH_PAT` secret: a clone URL with a personal access token embedded, pointing at `GGA64RecompSecrets`. Its contents are copied over the checkout recursively, so it mirrors this repository's layout and needs to contain:
+
+| path | used by |
+| --- | --- |
+| `lib/gga/config/usa/baserom.decompressed.z64` | `gga.recomp.toml`, whose paths resolve relative to the config file |
+| `mnsg.z64` | `aspMain.toml`, which still takes the RSP audio microcode from a Mystical Ninja ROM |
+
+The second entry is a loose end rather than a design choice; see the note in section 4.

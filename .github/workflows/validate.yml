@@ -1,3 +1,20 @@
+# The build needs a ROM, which cannot live in a public repository, so each job
+# clones a private one first.
+#
+# G64RS_REPO_WITH_PAT is a clone URL with a personal access token embedded,
+# pointing at GGA64RecompSecrets. Its contents are copied over the checkout
+# recursively, so it mirrors this repository's layout rather than being a flat
+# pile of files, and needs to supply:
+#
+#   lib/gga/config/usa/baserom.decompressed.z64   for gga.recomp.toml, whose
+#                                                 paths resolve relative to the
+#                                                 config file itself
+#   mnsg.z64                                      for aspMain.toml, which still
+#                                                 takes the RSP audio microcode
+#                                                 from a Mystical Ninja ROM
+#
+# Everything else the recompiler reads is committed: the symbol files live in
+# the lib/gga submodule, so there is no separate symbols repository.
 name: validate
 on:
   workflow_call:
@@ -40,7 +57,7 @@ jobs:
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          cp ./Goemon64RecompSecrets/* ./
+          cp -r ./GGA64RecompSecrets/* ./
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
@@ -131,7 +148,7 @@ jobs:
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          cp ./Goemon64RecompSecrets/* ./
+          cp -r ./GGA64RecompSecrets/* ./
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
@@ -206,7 +223,7 @@ jobs:
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          cp ./Goemon64RecompSecrets/* ./
+          cp -r ./GGA64RecompSecrets/* ./
       - name: Prepare Flatpak
         run: |
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -256,7 +273,7 @@ jobs:
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          Copy-Item -Path .\Goemon64RecompSecrets\* -Destination .\ -Recurse
+          Copy-Item -Path .\GGA64RecompSecrets\* -Destination .\ -Recurse
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
@@ -345,7 +362,7 @@ jobs:
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          cp ./Goemon64RecompSecrets/* ./
+          cp -r ./GGA64RecompSecrets/* ./
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
