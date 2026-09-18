@@ -88,6 +88,7 @@ Instructions on how to build this project can be found in the [BUILDING.md](BUIL
 
 ## Libraries Used and Projects Referenced
 * [Goemon64Recomp](https://github.com/klorfmorf/Goemon64Recomp) for the Mystical Ninja recompilation this is forked from
+* Also used from above is the icon/background graphic designed by [Jingleboy of Goemon International](https://goemoninternational.com)
 * [Zelda64Recomp](https://github.com/Zelda64Recomp/Zelda64Recomp) for the base upon which that project was built
 * [RT64](https://github.com/rt64/rt64) for the project's rendering engine
 * [RmlUi](https://github.com/mikke89/RmlUi) for building the menus and launcher
