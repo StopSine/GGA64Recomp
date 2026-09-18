@@ -438,11 +438,22 @@ struct DebugContext {
 
     void update_warp_names() {
         scene_names.clear();
-        for (const auto& scene : goemon64::game_warps[area_index].scenes) {
+        entrance_names.clear();
+
+        // game_warps is empty until the warp table is filled in for this game,
+        // and the indices are driven by the menu, so neither is assumed valid.
+        if (area_index < 0 || size_t(area_index) >= goemon64::game_warps.size()) {
+            return;
+        }
+
+        const auto& scenes = goemon64::game_warps[area_index].scenes;
+        for (const auto& scene : scenes) {
             scene_names.emplace_back(scene.name);
         }
-        
-        entrance_names = goemon64::game_warps[area_index].scenes[scene_index].entrances;
+
+        if (scene_index >= 0 && size_t(scene_index) < scenes.size()) {
+            entrance_names = scenes[scene_index].entrances;
+        }
     }
 };
 

@@ -7,8 +7,17 @@ std::atomic<uint16_t> pending_warp = 0xFFFF;
 std::atomic<uint32_t> pending_set_time = 0xFFFF;
 
 void goemon64::do_warp(int area, int scene, int entrance) {
-    const goemon64::SceneWarps game_scene = goemon64::game_warps[area].scenes[scene];
-    int game_scene_index = game_scene.index;
+    if (area < 0 || size_t(area) >= goemon64::game_warps.size()) {
+        return;
+    }
+
+    const auto& scenes = goemon64::game_warps[area].scenes;
+
+    if (scene < 0 || size_t(scene) >= scenes.size()) {
+        return;
+    }
+
+    int game_scene_index = scenes[scene].index;
     pending_warp.store(((game_scene_index & 0xFF) << 8) | ((entrance & 0x0F) << 4));
 }
 
