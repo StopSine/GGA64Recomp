@@ -6,6 +6,7 @@ It is a fork of [Goemon64Recomp](https://github.com/klorfmorf/Goemon64Recomp), w
 
 ### **This repository and its releases do not contain game assets. The original game is required to build or run this project.**
 
+
 ## Status
 
 This is a work in progress, not a finished port. Goemon's Great Adventure has no decompilation, so it is recompiled directly from disassembly, and progress is tracked by what has been made to work rather than by a feature list.
