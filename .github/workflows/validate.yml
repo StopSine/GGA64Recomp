@@ -33,6 +33,14 @@ on:
         type: string
         required: false
         default: '4e6f4e52989aca69739880b40b9f988357f15d10ca03284377b81f1502463ff5'
+      # The Linux, Flatpak and macOS jobs are off while Windows is being
+      # brought up, so a run is not four failures deep before reaching the one
+      # being worked on. Flip this default to bring them all back; nothing
+      # depends on them, and update-pr-artifacts lists whatever artifacts exist.
+      RUN_NON_WINDOWS:
+        type: boolean
+        required: false
+        default: false
     secrets:
       SECRETS_TOKEN:
         required: true
@@ -41,6 +49,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build-linux:
+    if: ${{ inputs.RUN_NON_WINDOWS }}
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -121,6 +130,7 @@ jobs:
           name: GGA64Recompiled-AppImage-X64-${{ matrix.type }}
           path: GGA64Recompiled-*.AppImage
   build-linux-arm64:
+    if: ${{ inputs.RUN_NON_WINDOWS }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -216,6 +226,7 @@ jobs:
           name: GGA64Recompiled-AppImage-ARM64-${{ matrix.type }}
           path: GGA64Recompiled-*.AppImage
   build-linux-flatpak:
+    if: ${{ inputs.RUN_NON_WINDOWS }}
     runs-on: ubuntu-latest
     env:
       FLATPAK_ID: io.github.stopsine.gga64recomp
@@ -379,6 +390,7 @@ jobs:
           path: |
             GGA64Recompiled.pdb
   build-macos:
+    if: ${{ inputs.RUN_NON_WINDOWS }}
     runs-on: macos-14
     strategy:
       matrix:
