@@ -2,7 +2,7 @@
 
 DECLARE_FUNC(float, recomp_get_target_aspect_ratio, float);
 
-extern u8 D_800881C0[];          // graphics context; scissor at 0x14..0x1A
+extern u8 gfx_context[];          // graphics context; scissor at 0x14..0x1A
 extern u8 *D_80108B70_5C3D90;    // the live scene, if any
 extern u8 D_801736C0[];          // flag array, 30 byte entries
 extern u32 D_80108C50_5C3E70[];  // static display list for the building entry fade
@@ -13,10 +13,10 @@ void func_800D45A0_58F7C0(void *arg0, s32 arg1, s32 arg2);
 void func_800D4338_58F558(void *arg0);
 void func_800D3FF0_58F210(void *arg0, void *callback, s32 arg2, s32 arg3);
 
-#define GFX_SCISSOR_ULX (*(u16 *)&D_800881C0[0x14])
-#define GFX_SCISSOR_ULY (*(u16 *)&D_800881C0[0x16])
-#define GFX_SCISSOR_LRX (*(u16 *)&D_800881C0[0x18])
-#define GFX_SCISSOR_LRY (*(u16 *)&D_800881C0[0x1A])
+#define GFX_SCISSOR_ULX (*(u16 *)&gfx_context[0x14])
+#define GFX_SCISSOR_ULY (*(u16 *)&gfx_context[0x16])
+#define GFX_SCISSOR_LRX (*(u16 *)&gfx_context[0x18])
+#define GFX_SCISSOR_LRY (*(u16 *)&gfx_context[0x1A])
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
@@ -146,7 +146,7 @@ RECOMP_PATCH void func_800D48B4_58FAD4(void) {
 // @recomp Widen the scissor the fade sets. The original sets the graphics
 // context's scissor to one of two rectangles and sets or clears bit 1 of a flag
 // the scene holds; reproduced exactly.
-RECOMP_PATCH void func_800DEC40_599E60(s32 mode) {
+RECOMP_PATCH void scene_apply_scissor(s32 mode) {
     u8 *scene = D_80108B70_5C3D90;
 
     if (scene == NULL) {
@@ -169,7 +169,7 @@ RECOMP_PATCH void func_800DEC40_599E60(s32 mode) {
 // clears bit 1 of an entry's first byte; reproduced exactly.
 // func_800DA850_595A70 writes the scissor directly and is too large to replace,
 // but it calls this immediately afterwards.
-RECOMP_PATCH void func_800D8CA0_593EC0(s32 index, s32 set) {
+RECOMP_PATCH void flag_entry_set_bit1(s32 index, s32 set) {
     u8 *entry = &D_801736C0[index * 30];
 
     if (set) {
