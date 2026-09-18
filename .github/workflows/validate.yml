@@ -1,10 +1,14 @@
 # The build needs a ROM, which cannot live in a public repository, so each job
-# clones a private one first.
+# checks out a private one first.
 #
-# G64RS_REPO_WITH_PAT is a clone URL with a personal access token embedded,
-# pointing at GGA64RecompSecrets. Its contents are copied over the checkout
-# recursively, so it mirrors this repository's layout rather than being a flat
-# pile of files, and needs to supply:
+# SECRETS_TOKEN is a fine-grained token with Contents: Read on nothing but
+# GGA64RecompSecrets, passed to actions/checkout rather than embedded in a clone
+# URL. persist-credentials is off so it is not left behind in .git/config for a
+# later step to pick up or archive.
+#
+# That repository's contents are copied over the checkout recursively, so it
+# mirrors this repository's layout rather than being a flat pile of files, and
+# needs to supply:
 #
 #   lib/gga/config/usa/baserom.decompressed.z64   for gga.recomp.toml, whose
 #                                                 paths resolve relative to the
@@ -30,7 +34,7 @@ on:
         required: false
         default: '4e6f4e52989aca69739880b40b9f988357f15d10ca03284377b81f1502463ff5'
     secrets:
-      G64RS_REPO_WITH_PAT:
+      SECRETS_TOKEN:
         required: true
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -52,10 +56,15 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ runner.os }}-g64r-ccache-${{ matrix.type }}-x64-${{ inputs.N64RECOMP_COMMIT }}
-      - name: Prepare Build
-        run: |-
-          git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          cp -r ./GGA64RecompSecrets/* ./
+      - name: Fetch private assets
+        uses: actions/checkout@v4
+        with:
+          repository: StopSine/GGA64RecompSecrets
+          token: ${{ secrets.SECRETS_TOKEN }}
+          persist-credentials: false
+          path: private-assets
+      - name: Stage private assets
+        run: cp -r ./private-assets/* ./
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
@@ -143,10 +152,15 @@ jobs:
           sudo make install
           sudo cp -av /usr/local/lib/libSDL* /lib/aarch64-linux-gnu/
           echo ::endgroup::
-      - name: Prepare Build
-        run: |-
-          git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          cp -r ./GGA64RecompSecrets/* ./
+      - name: Fetch private assets
+        uses: actions/checkout@v4
+        with:
+          repository: StopSine/GGA64RecompSecrets
+          token: ${{ secrets.SECRETS_TOKEN }}
+          persist-credentials: false
+          path: private-assets
+      - name: Stage private assets
+        run: cp -r ./private-assets/* ./
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
@@ -218,10 +232,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y flatpak-builder ccache lld
-      - name: Prepare Build
-        run: |-
-          git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          cp -r ./GGA64RecompSecrets/* ./
+      - name: Fetch private assets
+        uses: actions/checkout@v4
+        with:
+          repository: StopSine/GGA64RecompSecrets
+          token: ${{ secrets.SECRETS_TOKEN }}
+          persist-credentials: false
+          path: private-assets
+      - name: Stage private assets
+        run: cp -r ./private-assets/* ./
       - name: Prepare Flatpak
         run: |
           flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -268,13 +287,19 @@ jobs:
           7z x LLVM.tar -oportable-llvm
       - name: Configure Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1
-      - name: Prepare Build
+      - name: Fetch private assets
+        uses: actions/checkout@v4
+        with:
+          repository: StopSine/GGA64RecompSecrets
+          token: ${{ secrets.SECRETS_TOKEN }}
+          persist-credentials: false
+          path: private-assets
+      - name: Stage private assets
         run: |-
-          git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
           # -Force so merging into directories that already exist is not an
           # error. Without it Copy-Item reports one per existing directory, and
           # Actions runs PowerShell with $ErrorActionPreference = 'Stop'.
-          Copy-Item -Path .\GGA64RecompSecrets\* -Destination .\ -Recurse -Force
+          Copy-Item -Path .\private-assets\* -Destination .\ -Recurse -Force
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
@@ -360,10 +385,15 @@ jobs:
         id: 'macports'
         with:
           parameters: '.github/macos/macports.yaml'
-      - name: Prepare Build
-        run: |-
-          git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          cp -r ./GGA64RecompSecrets/* ./
+      - name: Fetch private assets
+        uses: actions/checkout@v4
+        with:
+          repository: StopSine/GGA64RecompSecrets
+          token: ${{ secrets.SECRETS_TOKEN }}
+          persist-credentials: false
+          path: private-assets
+      - name: Stage private assets
+        run: cp -r ./private-assets/* ./
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource

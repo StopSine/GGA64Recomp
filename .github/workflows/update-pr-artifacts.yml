@@ -1,7 +1,7 @@
 name: update-pr-artifacts
 on:
   workflow_run:
-    workflows: [validate-external, validate-internal]
+    workflows: [validate-internal]
     types:
       - completed
 jobs:

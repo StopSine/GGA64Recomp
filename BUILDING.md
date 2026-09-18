@@ -84,7 +84,9 @@ Voilà! You should now have a `GGA64Recompiled` executable in the build director
 
 `.github/workflows/validate.yml` runs the same steps as above. Everything the recompiler reads is committed — the symbol files live in the `lib/gga` submodule, so there is no separate symbols repository — with one exception: the ROM, which cannot be in a public repository.
 
-Each job therefore clones a private repository first, using the `G64RS_REPO_WITH_PAT` secret: a clone URL with a personal access token embedded, pointing at `GGA64RecompSecrets`. Its contents are copied over the checkout recursively, so it mirrors this repository's layout, and one file is all it needs to contain:
+Each job therefore checks out a private repository, `GGA64RecompSecrets`, first. That needs a `SECRETS_TOKEN` repository secret: a fine-grained personal access token with `Contents: Read` on that repository and nothing else. It is passed to `actions/checkout` rather than embedded in a clone URL, with `persist-credentials: false` so it is not left in `.git/config` for a later step to archive.
+
+The private repository's contents are copied over the checkout recursively, so it mirrors this repository's layout, and one file is all it needs to contain:
 
 ```
 lib/gga/config/usa/baserom.decompressed.z64
