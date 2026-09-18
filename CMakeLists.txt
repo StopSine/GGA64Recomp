@@ -118,7 +118,7 @@ target_sources(PatchesLib PRIVATE
 
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
-set(PATCHES_DIR  ${CMAKE_SOURCE_DIR}/patches_gga)
+set(PATCHES_DIR  ${CMAKE_SOURCE_DIR}/patches)
 set(PATCHES_TOML gga.patches.toml)
 
 # Build patches elf

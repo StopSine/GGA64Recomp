@@ -67,3 +67,5 @@ RSPRecomp
 build-*
 cmake-build-*
 cmake-build
+# Save files created by the game or imported from an emulator
+*.srm
