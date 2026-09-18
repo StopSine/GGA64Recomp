@@ -271,7 +271,10 @@ jobs:
       - name: Prepare Build
         run: |-
           git clone ${{ secrets.G64RS_REPO_WITH_PAT }}
-          Copy-Item -Path .\GGA64RecompSecrets\* -Destination .\ -Recurse
+          # -Force so merging into directories that already exist is not an
+          # error. Without it Copy-Item reports one per existing directory, and
+          # Actions runs PowerShell with $ErrorActionPreference = 'Stop'.
+          Copy-Item -Path .\GGA64RecompSecrets\* -Destination .\ -Recurse -Force
       - name: Build N64Recomp & RSPRecomp
         run: |
           git clone https://github.com/Mr-Wiseguy/N64Recomp.git --recurse-submodules N64RecompSource
