@@ -15,12 +15,6 @@
 	path = lib/N64ModernRuntime
 	url = https://github.com/StopSine/N64ModernRuntime.git
 	branch = gga-support
-[submodule "Goemon64RecompSyms"]
-	path = Goemon64RecompSyms
-	url = https://github.com/klorfmorf/Goemon64RecompSyms
-[submodule "lib/mnsg"]
-	path = lib/mnsg
-	url = https://github.com/klorfmorf/mnsg
 [submodule "lib/gga"]
 	path = lib/gga
 	url = https://github.com/StopSine/gga.git

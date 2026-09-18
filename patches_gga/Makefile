@@ -1,11 +1,9 @@
 # Patch build for Goemon's Great Adventure.
 #
-# Identical to the Mystical Ninja patch build except for the include paths.
-# The patch sources are game specific: the Mystical Ninja set patches its own
-# decompiled functions by name, none of which exist in GGA. This directory
-# therefore starts with only dummy.c, which is enough to produce a valid
-# patches.elf so the build can link, and is where GGA patches go -- starting
-# with the overlay loader patch for func_80003E50_4A50.
+# Every .c and .s here is built into patches.elf, which N64Recomp then
+# recompiles. A patch names the game function it replaces, so dummy.c exists to
+# keep the elf valid when nothing else is being patched. The headers alongside
+# it declare the host API that both the patches and src/ compile against.
 
 # Output definitions
 TARGET_NAME := patches.elf

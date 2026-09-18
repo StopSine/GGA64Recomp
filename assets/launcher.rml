@@ -15,13 +15,7 @@
 		<div id="window" data-model="launcher_model">
 			<div class="launcher">
 				<div class="launcher__vertical-split">
-					<div class="launcher__title-quadrant">
-						<button class="subtitle-title" disabled>
-							<div><h3>Goemon 64: Recompiled</h3></div>
-							<div><h1>{{other_game_title}}</h1></div>
-							<div class="subtitle-title__disclaimer">{{other_game_note}}</div>
-						</button>
-					</div>
+					<div class="launcher__title-quadrant"></div>
 					<div class="launcher__content-quadrant"></div>
 				</div>
 				<div class="launcher__vertical-split launcher__vertical-split--right">

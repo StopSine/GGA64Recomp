@@ -65,7 +65,7 @@ jobs:
           cp cmake-build/RSPRecomp ..
       - name: Run N64Recomp & RSPRecomp
         run: |
-          ./N64Recomp mnsg.toml
+          ./N64Recomp lib/gga/config/usa/gga.recomp.toml
           ./RSPRecomp aspMain.toml
       - name: Build GoemonRecomp
         run: |-
@@ -152,7 +152,7 @@ jobs:
           cp cmake-build/RSPRecomp ..
       - name: Run N64Recomp & RSPRecomp
         run: |
-          ./N64Recomp mnsg.toml
+          ./N64Recomp lib/gga/config/usa/gga.recomp.toml
           ./RSPRecomp aspMain.toml
       - name: Build GoemonRecomp
         run: |-
@@ -277,7 +277,7 @@ jobs:
           cp cmake-build/RSPRecomp.exe ..
       - name: Run N64Recomp & RSPRecomp
         run: |
-          ./N64Recomp.exe mnsg.toml
+          ./N64Recomp.exe lib/gga/config/usa/gga.recomp.toml
           ./RSPRecomp.exe aspMain.toml
       - name: Build GoemonRecomp
         run: |-
@@ -366,7 +366,7 @@ jobs:
           cp cmake-build/RSPRecomp ..
       - name: Run N64Recomp & RSPRecomp
         run: |
-          ./N64Recomp mnsg.toml
+          ./N64Recomp lib/gga/config/usa/gga.recomp.toml
           ./RSPRecomp aspMain.toml
       - name: Build GoemonRecomp
         run: |-

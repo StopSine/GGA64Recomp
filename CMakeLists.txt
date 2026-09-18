@@ -118,21 +118,8 @@ target_sources(PatchesLib PRIVATE
 
 set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
-# Which game this binary is built for.
-#
-# Only one game can be linked at a time: each recompilation defines its own
-# recomp_entrypoint and get_entrypoint_address, so RecompiledFuncs/ and
-# RecompiledPatches/ must match the selected game. The patch sources are also
-# game specific, since a patch names the function it replaces.
-option(GOEMON_GAME_GGA "Build for Goemon's Great Adventure instead of Mystical Ninja" OFF)
-
-if(GOEMON_GAME_GGA)
-    set(PATCHES_DIR  ${CMAKE_SOURCE_DIR}/patches_gga)
-    set(PATCHES_TOML gga.patches.toml)
-else()
-    set(PATCHES_DIR  ${CMAKE_SOURCE_DIR}/patches)
-    set(PATCHES_TOML patches.toml)
-endif()
+set(PATCHES_DIR  ${CMAKE_SOURCE_DIR}/patches_gga)
+set(PATCHES_TOML gga.patches.toml)
 
 # Build patches elf
 if(NOT DEFINED PATCHES_C_COMPILER)
@@ -169,10 +156,6 @@ add_custom_command(OUTPUT
 
 # Main executable
 add_executable(Goemon64Recompiled)
-
-if(GOEMON_GAME_GGA)
-    target_compile_definitions(Goemon64Recompiled PRIVATE GOEMON_GAME_GGA)
-endif()
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp

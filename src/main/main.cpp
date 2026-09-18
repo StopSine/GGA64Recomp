@@ -40,10 +40,10 @@
 #include "librecomp/mods.hpp"
 #include "librecomp/helpers.hpp"
 
-#include "../../patches/graphics.h"
-#include "../../patches/input.h"
-#include "../../patches/sound.h"
-#include "../../patches/misc_funcs.h"
+#include "../../patches_gga/graphics.h"
+#include "../../patches_gga/input.h"
+#include "../../patches_gga/sound.h"
+#include "../../patches_gga/misc_funcs.h"
 
 // #include "mods/mm_recomp_dpad_builtin.h"
 
@@ -350,14 +350,7 @@ extern "C" void recomp_entrypoint(uint8_t * rdram, recomp_context * ctx);
 gpr get_entrypoint_address();
 
 // array of supported GameEntry objects
-//
-// Only one game can be present in a given binary. Each recompilation defines
-// its own recomp_entrypoint and get_entrypoint_address (the latter comes from
-// the generated RecompiledFuncs/lookup.cpp), so two of them cannot be linked
-// together. Selecting a game therefore means building with the matching
-// RecompiledFuncs/ and RecompiledPatches/, which GOEMON_GAME_GGA switches.
 std::vector<recomp::GameEntry> supported_games = {
-#ifdef GOEMON_GAME_GGA
 	{
         .rom_hash = 0xA62841FD58D33B4EULL,
         // Matched as a prefix against the ROM header at 0x20, which reads
@@ -372,20 +365,6 @@ std::vector<recomp::GameEntry> supported_games = {
         .entrypoint_address = get_entrypoint_address(),
         .entrypoint = recomp_entrypoint,
 	}
-#else
-	{
-        .rom_hash = 0xDB1BC7EE0E6BEBA1ULL,
-        .internal_name = "MYSTICAL NINJA",
-        .game_id = u8"mnsg.us",
-        .mod_game_id = "mnsg",
-        .save_type = recomp::SaveType::AllowAll,
-        .is_enabled = true,
-        .decompression_routine = goemon64::decompress_mnsg,
-        .has_compressed_code = true,
-        .entrypoint_address = get_entrypoint_address(),
-        .entrypoint = recomp_entrypoint,
-	}
-#endif
 };
 
 // TODO: move somewhere else

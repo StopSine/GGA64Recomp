@@ -9,31 +9,7 @@
 
 static std::string version_string;
 
-// The launcher shows two panels: the game this binary was built for, which
-// carries the menu, and the other one marked as not yet available. Only one
-// game can be linked at a time (see supported_games in main.cpp), so which is
-// which is fixed at build time rather than chosen at runtime.
-static std::string active_game_title =
-#ifdef GOEMON_GAME_GGA
-    "Goemon's Great Adventure";
-#else
-    "Mystical Ninja Starring Goemon";
-#endif
-static std::string other_game_title =
-#ifdef GOEMON_GAME_GGA
-    "Mystical Ninja Starring Goemon";
-#else
-    "Goemon's Great Adventure";
-#endif
-
-// Shown under the other game's title. It is not "coming soon" in a GGA build:
-// Mystical Ninja is supported, just not by this binary.
-static std::string other_game_note =
-#ifdef GOEMON_GAME_GGA
-    "Built separately";
-#else
-    "Coming Soon";
-#endif
+static std::string active_game_title = "Goemon's Great Adventure";
 
 Rml::DataModelHandle model_handle;
 bool mm_rom_valid = false;
@@ -141,8 +117,6 @@ public:
 
         constructor.Bind("mm_rom_valid", &mm_rom_valid);
         constructor.Bind("active_game_title", &active_game_title);
-        constructor.Bind("other_game_title", &other_game_title);
-        constructor.Bind("other_game_note", &other_game_note);
 
         version_string = recomp::get_project_version().to_string();
         constructor.Bind("version_number", &version_string);

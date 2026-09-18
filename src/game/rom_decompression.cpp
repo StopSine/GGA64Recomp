@@ -105,83 +105,7 @@ size_t lzkn64_decompress(std::span<const uint8_t> input, std::span<uint8_t> outp
     return output_pos;
 }
 
-size_t lzkn64_decompress_rom(std::span<const uint8_t> input_rom, std::span<uint8_t> output_rom, size_t file_table_offset) {
-    const uint32_t* input_file_table_entry = reinterpret_cast<const uint32_t*>(input_rom.data() + file_table_offset);
-    uint32_t* output_file_table_entry = reinterpret_cast<uint32_t*>(output_rom.data() + file_table_offset);
-    uint32_t rom_offset = byteswap(input_file_table_entry[0]) & 0x7FFFFFFF;
-
-    while (input_file_table_entry[0] != 0 && input_file_table_entry[1] != 0) {
-        uint8_t file_is_compressed = (byteswap(input_file_table_entry[0]) & 0x80000000) >> 31;
-        uint32_t file_offset = byteswap(input_file_table_entry[0]) & 0x7FFFFFFF;
-        uint32_t file_size = (byteswap(input_file_table_entry[1]) & 0x7FFFFFFF) - file_offset;
-
-        if (file_is_compressed) {
-            std::span input_span = input_rom.subspan(file_offset, file_size);
-            std::span output_span = output_rom.subspan(rom_offset);
-
-            file_size = lzkn64_decompress(input_span, output_span);
-        } else {
-            memcpy(output_rom.data() + rom_offset, input_rom.data() + file_offset, file_size);
-        }
-
-        // Update the table entries for the current and the next file.
-        output_file_table_entry[0] = byteswap(rom_offset);
-        output_file_table_entry[1] = byteswap(rom_offset + ((file_size + 0xF) & ~0xF));
-
-        rom_offset += (file_size + 0xF) & ~0xF;
-
-        input_file_table_entry++;
-        output_file_table_entry++;
-    }
-
-    return rom_offset;
-}
-
 constexpr size_t MAXIMUM_ROM_SIZE = 0x4000000;
-constexpr size_t FILE_TABLE_OFFSET = 0x57FD8;
-constexpr uint32_t DECOMPRESSED_ROM_CRC_1 = 0x9CC11F4B;
-constexpr uint32_t DECOMPRESSED_ROM_CRC_2 = 0xABAA8538;
-
-// Produces a decompressed rom. This is only needed because the game has compressed code.
-// For other recomps using this repo as an example, you can omit the decompression routine and
-// set the corresponding fields in the GameEntry if the game doesn't have compressed code,
-// even if it does have compressed data.
-std::vector<uint8_t> goemon64::decompress_mnsg(std::span<const uint8_t> compressed_rom) {
-    // Sanity check the rom size and header. These should already be correct from the runtime's check,
-    // but it should prevent this file from accidentally being copied to another recomp.
-    if (compressed_rom.size() != 0x1000000) {
-        assert(false);
-        return {};
-    }
-
-    if (compressed_rom[0x3B] != 'N' || compressed_rom[0x3C] != 'G' || compressed_rom[0x3D] != '5' || compressed_rom[0x3E] != 'E') {
-        assert(false);
-        return {};
-    }
-
-    std::vector<uint8_t> ret{};
-    ret.resize(MAXIMUM_ROM_SIZE);
-    memcpy(ret.data(), compressed_rom.data(), compressed_rom.size());
-
-    size_t final_size = lzkn64_decompress_rom(compressed_rom, ret, FILE_TABLE_OFFSET);
-
-    // Align final_size to the nearest power of two.
-    final_size--;
-    final_size |= final_size >> 1;
-    final_size |= final_size >> 2;
-    final_size |= final_size >> 4;
-    final_size |= final_size >> 8;
-    final_size |= final_size >> 16;
-    final_size++;
-
-    ret.resize(final_size);
-
-    // Write the CRC values to the header of the decompressed ROM.
-    *reinterpret_cast<uint32_t*>(ret.data() + 0x10) = byteswap(DECOMPRESSED_ROM_CRC_1);
-    *reinterpret_cast<uint32_t*>(ret.data() + 0x14) = byteswap(DECOMPRESSED_ROM_CRC_2);
-
-    return ret;
-}
 
 // =============================================================================
 // Goemon's Great Adventure
@@ -202,11 +126,9 @@ std::vector<uint8_t> goemon64::decompress_mnsg(std::span<const uint8_t> compress
 // at 16-byte alignment, the file table is rewritten in place and the result is
 // rounded up to a power of two (0x2000000 for GGA).
 //
-// Unlike decompress_mnsg this does not rewrite the header CRCs. The Mystical
-// Ninja decompressed ROM was produced with rommy's CRC recalculation enabled,
-// so the runtime has to reproduce those values; GGA's was produced with
-// --no-fix-crcs and therefore keeps the retail CRCs, which copying the retail
-// image already gives us.
+// The header CRCs are deliberately left alone: the decompressed ROM this was
+// generated against was produced with rommy's --no-fix-crcs, so it keeps the
+// retail CRCs, which copying the retail image already gives us.
 
 constexpr size_t GGA_FILE_TABLE_OFFSET = 0x2C794;
 constexpr uint32_t CHUNK_ZLIB_FLAG = 0x80000000;
@@ -267,7 +189,9 @@ size_t gga_decompress_rom(std::span<const uint8_t> input_rom, std::span<uint8_t>
 }
 
 std::vector<uint8_t> goemon64::decompress_gga(std::span<const uint8_t> compressed_rom) {
-    // Sanity check the rom size and header, mirroring decompress_mnsg.
+    // Sanity check the rom size and header. These should already be correct from
+    // the runtime's check, but it guards against this file being copied to
+    // another recomp.
     if (compressed_rom.size() != 0x1000000) {
         assert(false);
         return {};

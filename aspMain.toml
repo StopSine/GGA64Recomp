@@ -1,3 +1,11 @@
+# RSP audio microcode recompilation, producing rsp/aspMain.cpp.
+#
+# NOTE: the offset below is into the Mystical Ninja ROM, which is where this
+# microcode was originally extracted from, and the generated rsp/aspMain.cpp is
+# compiled into the Goemon's Great Adventure build as-is. Whether GGA ships the
+# same audio microcode has not been verified. If GGA's differs, this needs
+# re-extracting from the GGA ROM at its own offset. rsp/aspMain.cpp is not
+# tracked, so a fresh clone has to run RSPRecomp over a ROM to produce it.
 text_offset = 0x546B0
 text_size = 0xE20
 text_address = 0x04001080

@@ -1,9 +1,4 @@
 # Config file for recompiling patches for the Goemon's Great Adventure NTSC-U Recompilation.
-#
-# The Mystical Ninja equivalent is patches.toml. The two differ only in which
-# patch sources are built and which symbol files resolve their references;
-# the patch sources themselves are game specific, since a patch names the
-# function it replaces.
 
 [input]
 # Paths are relative to the location of this config file.

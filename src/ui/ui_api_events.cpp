@@ -23,7 +23,7 @@
 #include "librecomp/overlays.hpp"
 #include "librecomp/helpers.hpp"
 
-#include "../patches/ui_funcs.h"
+#include "../patches_gga/ui_funcs.h"
 
 struct QueuedCallback {
     recompui::ResourceId resource;

@@ -1,6 +1,6 @@
 # Building Guide
 
-This guide will help you build the project on your local machine. The process will require you to provide a decompressed ROM of the US version of the game.
+This guide will help you build the project on your local machine. The process will require you to provide a decompressed ROM of the US version of Goemon's Great Adventure.
 
 These steps cover: decompressing the ROM, running the recompiler and finally building the project.
 
@@ -36,11 +36,16 @@ choco install make
 ```
 
 ## 3. Decompressing the target ROM
-You will need to decompress the NTSC-U Mystical Ninja Starring Goemon ROM (sha1: df8083a54296b8c151917c5333e1c85f014a2a66) before running the recompiler.
+You will need a decompressed copy of the NTSC-U Goemon's Great Adventure ROM before running the recompiler. Unlike Mystical Ninja, this game has no decompilation, so the project is recompiled straight from the disassembly produced by the [`lib/gga`](https://github.com/StopSine/gga) submodule.
 
-Follow the build instructions for the [Mystical Ninja Starring Goemon Decompilation Project](https://github.com/klorfmorf/mnsg) in order to generate a decompressed ROM.
+Place your retail US ROM at `lib/gga/config/usa/baserom.z64`, then from `lib/gga` run:
 
-Copy the decompressed ROM with the name `baserom.us.decompressed.z64` from the root of the decompilation project to the root of the Goemon64Recomp repository and rename it to `mnsg.us.decompressed.z64`.
+```bash
+make setup   # decompresses the ROM and extracts assets
+make         # builds the disassembly and the linked ELF the symbols come from
+```
+
+The recompiler expects the decompressed ROM at `lib/gga/config/usa/baserom.decompressed.z64`, which `make setup` produces. See `lib/gga/docs/overlay_loader.md` for how the symbol files are generated and why the overlays are handled the way they are.
 
 ## 4. Generating the C code
 
@@ -48,9 +53,12 @@ Now that you have the required files, you must build [N64Recomp](https://github.
 
 After that, go back to the repository root, and run the following commands:
 ```bash
-./N64Recomp mnsg.us.toml
-./RSPRecomp aspMain.us.toml
+./N64Recomp lib/gga/config/usa/gga.recomp.toml
+./RSPRecomp aspMain.toml
 ```
+
+> [!NOTE]
+> `aspMain.toml` still extracts the RSP audio microcode from a Mystical Ninja ROM, which is where it was originally taken from, and expects that ROM at `mnsg.z64` in the repository root. Whether Goemon's Great Adventure ships the same microcode has not been verified. See the comment at the top of that file.
 
 ## 5. Building the Project
 

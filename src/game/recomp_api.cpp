@@ -8,9 +8,9 @@
 #include "goemon_render.h"
 #include "goemon_sound.h"
 #include "librecomp/helpers.hpp"
-#include "../patches/input.h"
-#include "../patches/graphics.h"
-#include "../patches/sound.h"
+#include "../patches_gga/input.h"
+#include "../patches_gga/graphics.h"
+#include "../patches_gga/sound.h"
 #include "ultramodern/ultramodern.hpp"
 #include "ultramodern/config.hpp"
 

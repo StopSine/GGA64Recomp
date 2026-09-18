@@ -1,7 +1,7 @@
 #include <atomic>
 #include "goemon_debug.h"
 #include "librecomp/helpers.hpp"
-#include "../patches/input.h"
+#include "../patches_gga/input.h"
 
 std::atomic<uint16_t> pending_warp = 0xFFFF;
 std::atomic<uint32_t> pending_set_time = 0xFFFF;
