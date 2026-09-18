@@ -28,6 +28,7 @@
         "cp lib/N64Recomp/cmake-build/RSPRecomp RSPRecomp",
         "./N64Recomp lib/gga/config/usa/gga.recomp.toml",
         "./RSPRecomp aspMain.toml",
+        "python3 lib/gga/tools/fix_zero_loads.py RecompiledFuncs",
         "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_MAKE_PROGRAM=ninja -DPATCHES_C_COMPILER=clang -DPATCHES_LD=ld.lld -DRECOMP_FLATPAK=ON -G Ninja -S . -B cmake-build",
         "cmake --build cmake-build --config Release --target GGA64Recompiled --parallel",
         "rm -rf assets/scss",

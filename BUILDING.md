@@ -56,9 +56,18 @@ After that, go back to the repository root, and run the following commands:
 ```bash
 ./N64Recomp lib/gga/config/usa/gga.recomp.toml
 ./RSPRecomp aspMain.toml
+python3 lib/gga/tools/fix_zero_loads.py RecompiledFuncs
 ```
 
-Both read the decompressed ROM produced in step 3, so nothing else needs supplying.
+The first two read the decompressed ROM produced in step 3, so nothing else needs supplying.
+
+The third is required, not optional. A MIPS load targeting `$zero` discards its result, which games use to force a read of a hardware register, and N64Recomp lowers the destination literally:
+
+```c
+0 = MEM_W(ctx->r4, 0X0);
+```
+
+That is not assignable and fails to compile. The pass rewrites those to `(void)(MEM_W(...))`, keeping the read and discarding the value, and errors out if any survive rather than letting them become a compile error later.
 
 ## 5. Building the Project
 

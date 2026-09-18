@@ -91,6 +91,10 @@ jobs:
         run: |
           ./N64Recomp lib/gga/config/usa/gga.recomp.toml
           ./RSPRecomp aspMain.toml
+          # A load targeting $zero is lowered literally as `0 = MEM_W(...)`,
+          # which will not compile. This rewrites those to discard the value
+          # while keeping the read, and fails if any survive.
+          python3 lib/gga/tools/fix_zero_loads.py RecompiledFuncs
       - name: Build GoemonRecomp
         run: |-
           # enable ccache
@@ -183,6 +187,10 @@ jobs:
         run: |
           ./N64Recomp lib/gga/config/usa/gga.recomp.toml
           ./RSPRecomp aspMain.toml
+          # A load targeting $zero is lowered literally as `0 = MEM_W(...)`,
+          # which will not compile. This rewrites those to discard the value
+          # while keeping the read, and fails if any survive.
+          python3 lib/gga/tools/fix_zero_loads.py RecompiledFuncs
       - name: Build GoemonRecomp
         run: |-
           # enable ccache
@@ -322,6 +330,10 @@ jobs:
         run: |
           ./N64Recomp.exe lib/gga/config/usa/gga.recomp.toml
           ./RSPRecomp.exe aspMain.toml
+          # A load targeting $zero is lowered literally as `0 = MEM_W(...)`,
+          # which will not compile. This rewrites those to discard the value
+          # while keeping the read, and fails if any survive.
+          python lib/gga/tools/fix_zero_loads.py RecompiledFuncs
       - name: Build GoemonRecomp
         run: |-
           # enable ccache
@@ -416,6 +428,10 @@ jobs:
         run: |
           ./N64Recomp lib/gga/config/usa/gga.recomp.toml
           ./RSPRecomp aspMain.toml
+          # A load targeting $zero is lowered literally as `0 = MEM_W(...)`,
+          # which will not compile. This rewrites those to discard the value
+          # while keeping the read, and fails if any survive.
+          python3 lib/gga/tools/fix_zero_loads.py RecompiledFuncs
       - name: Build GoemonRecomp
         run: |-
           # enable ccache
