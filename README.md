@@ -88,7 +88,6 @@ You'll probably also want to change the default behavior so that you don't need 
 Yes, if you place a file named `portable.txt` in the same folder as the executable then this project will run in portable mode. In portable mode, the save files, config files, and mods are placed in the same folder as the executable.
 
 ## Known Issues
-* Widescreen support for the level backgrounds depends on an unmerged RT64 change ([rt64/rt64#269](https://github.com/rt64/rt64/pull/269)), so `lib/rt64` points at the [`ex-gbi-scissor-aspect`](https://github.com/StopSine/rt64/tree/ex-gbi-scissor-aspect) branch of a fork rather than upstream `main`. Building against plain upstream RT64 instead will leave those backgrounds confined to a 4:3 window in the centre of the screen.
 * Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
 
 ## Building
