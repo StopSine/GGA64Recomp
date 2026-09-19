@@ -69,13 +69,6 @@ Static recompilation is the process of automatically translating an application 
 #### Is this based on a decompilation?
 No. Static recompilation bypasses the need for decompiled source code, which is what makes this game portable at all: unlike Mystical Ninja, Goemon's Great Adventure has no decompilation project. Every modification here is made by patching recompiled functions by name, working from disassembly and symbol names rather than source.
 
-#### How do I set up gyro aiming on Steam Deck?
-This project provides mouse aiming as a way to allow using gyro on Steam Deck, as the Steam Deck's gyro sensors cannot be read directly. First, launch the game in Gaming Mode, press the Steam button and go to "Controller Settings". Choose "Controller Settings" again in the menu that follows, and then set "Gyro Behavior" to "As Mouse".
-
-![Controller Settings menu](docs/deck_gyro_1.jpg)
-
-You'll probably also want to change the default behavior so that you don't need to be touching the right stick to allow gyro input. To do so, click on the Gear icon to the right of "Gyro Behavior" and ensure that "Gyro Activation Buttons" is set to "None Selected (Gyro Always On)." If this isn't the case, then select that option and then press "Select None" in the following menu.
-
 #### Where is the savefile stored?
 - Windows: `%LOCALAPPDATA%\GGA64Recomp\saves`
 - Linux: `~/.config/GGA64Recomp/saves`
