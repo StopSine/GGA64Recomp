@@ -87,7 +87,7 @@ You'll probably also want to change the default behavior so that you don't need 
 Yes, if you place a file named `portable.txt` in the same folder as the executable then this project will run in portable mode. In portable mode, the save files, config files, and mods are placed in the same folder as the executable.
 
 ## Known Issues
-* In widescreen, the flat background of most levels can appear and disappear at the left and right edges of the screen. The background is a panorama that repeats every 512 units, which is enough to fill a 4:3 view but not a wider one, so the point where it repeats becomes visible. Terrain and platform pop-in, which had a separate cause, is fixed. Use the original aspect ratio to avoid it.
+* In widescreen, the flat background of most levels can appear and disappear at the left and right edges of the screen. The background is drawn as tall images tiled side by side, and the game draws only the ones that cover a 4:3 view. That choice is made inside the routine that draws it, rather than from any setting or field that can be widened, so it is unfixed for now. Terrain and platform pop-in, which had a separate cause, is fixed. Use the original aspect ratio to avoid it.
 * Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
 
 ## Building
