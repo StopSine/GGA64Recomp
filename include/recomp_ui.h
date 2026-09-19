@@ -87,6 +87,11 @@ namespace recompui {
 
     void init_styling(const std::filesystem::path& rcss_file);
     void init_prompt_context();
+
+    // A passive corner feed of short messages; see src/ui/ui_game_messages.cpp.
+    void init_game_message_context();
+    void show_game_message(const std::string& text);
+    void update_game_messages();
     void open_choice_prompt(
         const std::string& header_text,
         const std::string& content_text,

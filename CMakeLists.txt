@@ -181,6 +181,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_launcher.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_config.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_prompt.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ui_game_messages.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_config_sub_menu.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_color_hack.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ui_rml_hacks.cpp

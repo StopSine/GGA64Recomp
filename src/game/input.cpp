@@ -4,6 +4,7 @@
 #include "ultramodern/ultramodern.hpp"
 #include "recomp.h"
 #include "recomp_input.h"
+#include "librecomp/overlays.hpp"
 #include "goemon_config.h"
 #include "recomp_ui.h"
 #include "SDL.h"
@@ -116,6 +117,16 @@ bool sdl_event_filter(void* userdata, SDL_Event* event) {
                 keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_F11
             ) {
                 recompui::toggle_fullscreen();
+            }
+
+            // F9 marks a point in the overlay log. Press it just before
+            // entering a level and every overlay that level brings in is
+            // reported once, to stderr, without the overlays already resident
+            // from the world map drowning them out.
+            if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_F9) {
+                bool enable = !recomp::overlays::overlay_load_logging_enabled();
+                recomp::overlays::set_overlay_load_logging(enable);
+                fprintf(stderr, "[ovl-mark] %s\n", enable ? "--- mark, reporting overlay loads ---" : "--- stopped ---");
             }
             if (scanning_device != recomp::InputDevice::COUNT) {
                 if (keyevent->keysym.scancode == SDL_Scancode::SDL_SCANCODE_ESCAPE) {

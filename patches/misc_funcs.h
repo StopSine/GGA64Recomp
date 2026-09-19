@@ -6,6 +6,8 @@
 DECLARE_FUNC(void, recomp_load_overlays, u32 rom, void* ram, u32 size);
 DECLARE_FUNC(void, recomp_unload_overlays, void *vram_addr, u32 size);
 DECLARE_FUNC(void, recomp_puts, const char* data, u32 size);
+DECLARE_FUNC(void, recomp_show_message, const char* data, u32 size);
+DECLARE_FUNC(void, recomp_dump_scene_graph);
 DECLARE_FUNC(void, recomp_exit);
 DECLARE_FUNC(void, recomp_handle_quicksave_actions, OSMesgQueue* enter_mq, OSMesgQueue* exit_mq);
 DECLARE_FUNC(void, recomp_handle_quicksave_actions_main, OSMesgQueue* enter_mq, OSMesgQueue* exit_mq);

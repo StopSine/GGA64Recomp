@@ -557,10 +557,36 @@ void reorder_texture_pack(recomp::mods::ModContext&) {
 #define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)
 
 int main(int argc, char** argv) {
-    // On Windows stderr is buffered when redirected to a file, so diagnostics
-    // are lost if the process aborts. Keep it unbuffered so a crash still
-    // leaves the log that explains it.
+    // A release build is a GUI subsystem app, so a normal launch has no console
+    // and every diagnostic is discarded -- including the ones that explain a
+    // crash. Send them to a file instead when nothing else is listening. A
+    // shell redirection leaves a valid handle here and is left alone, so
+    // running with 2>&1 still works.
+#ifdef _WIN32
+    {
+        HANDLE err_handle = GetStdHandle(STD_ERROR_HANDLE);
+
+        if (err_handle == nullptr || err_handle == INVALID_HANDLE_VALUE) {
+            std::error_code ec{};
+            std::filesystem::path log_path = goemon64::get_app_folder_path();
+
+            if (!log_path.empty()) {
+                std::filesystem::create_directories(log_path, ec);
+                log_path /= "GGA64Recomp.log";
+
+                (void)freopen(log_path.string().c_str(), "w", stderr);
+                (void)freopen(log_path.string().c_str(), "a", stdout);
+            }
+        }
+    }
+#endif
+
+    // Both streams are buffered when redirected to a file, so output is lost if
+    // the process aborts. Keep them unbuffered so a crash still leaves the log
+    // that explains it, stdout included -- it carries the messages that say
+    // what was happening just before.
     setvbuf(stderr, nullptr, _IONBF, 0);
+    setvbuf(stdout, nullptr, _IONBF, 0);
 
     (void)argc;
     (void)argv;
@@ -660,6 +686,8 @@ int main(int argc, char** argv) {
     REGISTER_FUNC(recomp_get_bgm_volume);
     REGISTER_FUNC(recomp_get_se_volume);
     REGISTER_FUNC(recomp_get_gyro_deltas);
+    REGISTER_FUNC(recomp_show_message);
+    REGISTER_FUNC(recomp_dump_scene_graph);
     REGISTER_FUNC(recomp_get_mouse_deltas);
     REGISTER_FUNC(recomp_get_inverted_axes);
     REGISTER_FUNC(recomp_get_analog_inverted_axes);

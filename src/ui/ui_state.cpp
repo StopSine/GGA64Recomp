@@ -237,6 +237,7 @@ public:
         launcher_menu_controller->load_document();
         config_menu_controller->load_document();
         recompui::init_prompt_context();
+        recompui::init_game_message_context();
     }
 
     void unload() {
@@ -750,6 +751,8 @@ void draw_hook(plume::RenderCommandList* command_list, plume::RenderFramebuffer*
 
     ui_state->update_primary_input(mouse_moved, non_mouse_interacted);
     ui_state->update_focus(mouse_moved, non_mouse_interacted);
+
+    recompui::update_game_messages();
 
     if (recompui::is_any_context_shown()) {
         ui_state->update_contexts();

@@ -1,5 +1,7 @@
 #include "patch_helpers.h"
 
+DECLARE_FUNC(void, recomp_dump_scene_graph);
+
 DECLARE_FUNC(float, recomp_get_target_aspect_ratio, float);
 
 extern u8 gfx_context[];          // graphics context; scissor at 0x14..0x1A
@@ -133,6 +135,7 @@ static void set_scissor(u16 ulx, u16 uly, u16 lrx, u16 lry) {
 // argument, so forwarding three arguments reproduces the call exactly.
 void widescreen_frame_hook(void *arg0, s32 arg1, s32 arg2) {
     apply_scissor();
+    recomp_dump_scene_graph();
     func_800D45A0_58F7C0(arg0, arg1, arg2);
 }
 
