@@ -1,6 +1,5 @@
 #include "patch_helpers.h"
 
-DECLARE_FUNC(void, recomp_dump_scene_graph);
 
 DECLARE_FUNC(float, recomp_get_target_aspect_ratio, float);
 
@@ -135,7 +134,6 @@ static void set_scissor(u16 ulx, u16 uly, u16 lrx, u16 lry) {
 // argument, so forwarding three arguments reproduces the call exactly.
 void widescreen_frame_hook(void *arg0, s32 arg1, s32 arg2) {
     apply_scissor();
-    recomp_dump_scene_graph();
     func_800D45A0_58F7C0(arg0, arg1, arg2);
 }
 
@@ -144,6 +142,36 @@ void widescreen_frame_hook(void *arg0, s32 arg1, s32 arg2) {
 RECOMP_PATCH void func_800D48B4_58FAD4(void) {
     func_800D4338_58F558(D_80108660_5C3880);
     func_800D3FF0_58F210(D_8016FCF0, widescreen_frame_hook, 0, 0);
+}
+
+// Extra widening beyond an exact aspect match, because the cull tests an
+// item's origin rather than its extent: a piece of terrain whose origin is just
+// outside a plane but whose geometry reaches into view is still dropped.
+// Smaller widens further. Vertical gets a guard band too, for the same reason.
+#define CULL_MARGIN_HORIZONTAL 0.65f
+#define CULL_MARGIN_VERTICAL 0.85f
+
+// @recomp Rotate a cull plane's normal into world space, widening the side
+// planes so terrain is not dropped while it is still on screen.
+//
+// The caller builds four side planes from a single half-angle, so the cull
+// frustum is square whatever the display aspect. Scaling a normal's leading
+// component moves that plane's boundary outward in proportion; magnitude is
+// irrelevant because the test only reads the sign of the dot product. The
+// horizontal planes are the pair with no y component.
+RECOMP_PATCH void func_800E0B58_59BD78(f32 *dest, f32 *m, f32 nx, f32 ny, f32 nz) {
+    if (ny == 0.0f && nx != 0.0f) {
+        float aspect = g_original_aspect_ratio /
+                       recomp_get_target_aspect_ratio(g_original_aspect_ratio);
+        nx *= aspect * CULL_MARGIN_HORIZONTAL;
+    }
+    else if (nx == 0.0f && ny != 0.0f) {
+        ny *= CULL_MARGIN_VERTICAL;
+    }
+
+    dest[0] = m[0] * nx + m[4] * ny + m[8] * nz;
+    dest[1] = m[1] * nx + m[5] * ny + m[9] * nz;
+    dest[2] = m[2] * nx + m[6] * ny + m[10] * nz;
 }
 
 // @recomp Widen the scissor the fade sets. The original sets the graphics
