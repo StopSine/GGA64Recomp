@@ -219,9 +219,60 @@ static GfxCmd *emit(GfxCmd *dl, u32 w0, u32 w1) {
     return dl + 1;
 }
 
-static GfxCmd *set_rect_aspect(GfxCmd *dl, u32 aspect) {
+#define RT64_EX_SETRECTALIGN    0x64000006u
+#define RT64_EX_SETSCISSORASPECT 0x64000034u
+#define G_EX_ASPECT_ADJUST   2u
+#define G_EX_ORIGIN_LEFT     0x000u
+#define G_EX_ORIGIN_NONE     0x800u
+
+// How far the backdrop has to reach, in 10.2 pixels. Rects are drawn at native
+// size and anchored to the frame's left edge, so a wider display shows more of
+// the map rather than a scaled copy of it.
+#define COORD_MAX (1023 << 2)
+
+static u32 frame_right(void) {
+    float aspect = recomp_get_target_aspect_ratio(g_original_aspect_ratio);
+    u32 px = (u32)((float)SCREEN_HEIGHT * aspect) << 2;
+
+    if (px < (u32)(SCREEN_WIDTH << 2)) {
+        px = (u32)(SCREEN_WIDTH << 2);
+    }
+    if (px > (u32)COORD_MAX) {
+        px = (u32)COORD_MAX;
+    }
+    return px;
+}
+
+// The rects are anchored to the frame's left edge, but the scissor is still
+// converted about the frame's centre, which clips them back to the original
+// 4:3 window. Anchoring its left edge the same way and widening its right edge
+// as a plain coordinate lets it span the frame. A right origin is deliberately
+// not used: that adds the framebuffer width outright, giving a scissor twice
+// the frame. The alignment is only consumed when a scissor is set, so one is
+// emitted here and the frame's own is put back afterwards.
+// The rects are anchored to the frame's left edge, but the scissor is still
+// converted about the frame's centre and clips them back to a 4:3 window. Its
+// origins move where each edge is measured from, while the offsets keep the
+// stored rectangle where it was: that matters because the ratio adjustment is
+// only applied when the stored scissor is within a tenth of 4:3, and a scissor
+// that actually spans the frame disables it for everything in the frame, which
+// is what stretched the interface as well as the backdrop. Anchoring the right
+// edge to the frame's right and subtracting a frame width leaves the stored
+// rectangle unchanged and the converted one spanning the frame.
+// Three pieces of state, each captured per draw call, so no scissor has to be
+// re-emitted: keep the rects at native size, measure them from the frame's own
+// left edge rather than the centre of a 4:3 window, and let the scissor scale
+// to the display so it does not clip them back to that window. The scissor's
+// stored rectangle is left alone deliberately -- the ratio adjustment is only
+// applied while it stays within a tenth of 4:3, and widening it disables that
+// for everything in the frame, interface included.
+static GfxCmd *set_backdrop_mode(GfxCmd *dl, u32 rect_aspect, u32 rect_origin,
+                                 u32 scissor_aspect) {
     dl = emit(dl, RT64_HOOK_WORD0, RT64_HOOK_ENABLE);
-    return emit(dl, RT64_EX_SETRECTASPECT, aspect);
+    dl = emit(dl, RT64_EX_SETRECTASPECT, rect_aspect);
+    dl = emit(dl, RT64_EX_SETRECTALIGN, rect_origin | (rect_origin << 12));
+    dl = emit(dl, 0, 0);
+    return emit(dl, RT64_EX_SETSCISSORASPECT, scissor_aspect);
 }
 
 // The tile grid starts at a sub-tile scroll offset, so its columns stop short
@@ -232,7 +283,6 @@ static GfxCmd *set_rect_aspect(GfxCmd *dl, u32 aspect) {
 #define RECT_X_MASK 0xFFFu
 #define RECT_X_SHIFT 12
 #define TILE_FIXED (16 << 2)               // one tile, 10.2 pixels
-#define SCREEN_RIGHT (SCREEN_WIDTH << 2)
 #define GRID_COLUMNS 21                    // 19 emitted at most, plus the band
 #define S_PER_FIXED 8                      // S10.5 texels per 10.2 pixel at dsdx 1.0
 #define PAGE_SETTIMG 0xFD500000u           // starts a page's texture load
@@ -277,10 +327,26 @@ static void shift_rect_left(GfxCmd *rect) {
     rect->w1 = (rect->w1 & ~(RECT_X_MASK << RECT_X_SHIFT)) | (xl << RECT_X_SHIFT);
 }
 
-// Compact a pass down to the wanted rects, dropping page loads left with
-// nothing to draw. Output never overtakes input, so this is safe in place.
-static GfxCmd *compact_pass(GfxCmd *start, GfxCmd *end, u32 leftmost, int left_edge,
-                            u32 limit) {
+static void nudge_rect(GfxCmd *rect, u32 by) {
+    u32 xl = RECT_XL(rect) + by;
+    u32 xh = RECT_XH(rect) + by;
+
+    if (xh > RECT_X_MASK) {
+        return;
+    }
+
+    rect->w0 = (rect->w0 & ~(RECT_X_MASK << RECT_X_SHIFT)) | (xh << RECT_X_SHIFT);
+    rect->w1 = (rect->w1 & ~(RECT_X_MASK << RECT_X_SHIFT)) | (xl << RECT_X_SHIFT);
+}
+
+// Compact a pass down to the rects that land on screen, dropping page loads
+// left with nothing to draw. Output never overtakes input, so this is safe in
+// place. The band is positioned through a whole-pixel field while the grid's
+// columns sit on fractions of one, so each kept rect is nudged back into phase;
+// translating a rect carries its texture with it, keeping the artwork
+// continuous across the join.
+static GfxCmd *compact_pass(GfxCmd *start, GfxCmd *end, u32 leftmost,
+                            int left_edge, u32 limit, u32 x_shift) {
     GfxCmd *out = start;
     GfxCmd *cmd = start;
 
@@ -316,6 +382,9 @@ static GfxCmd *compact_pass(GfxCmd *start, GfxCmd *end, u32 leftmost, int left_e
 
             if (left_edge) {
                 shift_rect_left(cmd + 2);
+            }
+            else if (x_shift != 0) {
+                nudge_rect(cmd + 2, x_shift);
             }
 
             for (i = 0; i < TILE_GROUP; i++) {
@@ -353,9 +422,10 @@ static GfxCmd *compact_pass(GfxCmd *start, GfxCmd *end, u32 leftmost, int left_e
 static GfxCmd g_pass_scratch[SCRATCH_CMDS];
 
 static void *run_edge_pass(void *dl, void *node, node_draw_func draw,
-                           u32 leftmost, int left_edge, u32 limit) {
+                           u32 leftmost, int left_edge, u32 limit, u32 x_shift) {
     GfxCmd *pass_end = (GfxCmd *)draw(g_pass_scratch, node);
-    GfxCmd *kept_end = compact_pass(g_pass_scratch, pass_end, leftmost, left_edge, limit);
+    GfxCmd *kept_end = compact_pass(g_pass_scratch, pass_end, leftmost, left_edge,
+                                    limit, x_shift);
     GfxCmd *out = (GfxCmd *)dl;
     GfxCmd *cmd;
 
@@ -411,9 +481,11 @@ static void *draw_backdrop_edges(void *dl, void *node, node_draw_func draw,
     u32 limit;
     int passes = 0;
 
-    // Taken from what the grid emitted rather than assumed: the column count
-    // is 18 or 19 depending on whether the scroll sits on a tile boundary, and
-    // the drawer clamps its first column to the frame edge.
+    // Taken from what the grid emitted rather than assumed: it draws 18 or 19
+    // columns depending on whether the scroll sits on a tile boundary. A column
+    // straddling the frame's left edge is dropped rather than clipped, so
+    // depending on the scroll offset the grid can start a fraction of a tile in
+    // and the left side needs a column of its own.
     for (cmd = grid; cmd < grid_end; cmd++) {
         if ((cmd->w0 >> 24) != OP_TEXRECT) {
             continue;
@@ -454,12 +526,13 @@ static void *draw_backdrop_edges(void *dl, void *node, node_draw_func draw,
         return dl;
     }
 
-    limit = (u32)SCREEN_RIGHT;
+    limit = frame_right();
 
+    // Fill in the column the grid dropped for straddling the frame's left edge.
     if (leftmost > 0) {
         s32 want = band_column(node, first - 1, columns);
         NODE_PAN_X(node) = pan_x + (f32)((want - first) * 16);
-        dl = run_edge_pass(dl, node, draw, leftmost, 1, limit);
+        dl = run_edge_pass(dl, node, draw, leftmost, 1, limit, 0);
     }
 
     // Rects are drawn at native size, so the grid covers only the original 4:3
@@ -475,7 +548,7 @@ static void *draw_backdrop_edges(void *dl, void *node, node_draw_func draw,
         // The override sets the first column's right edge, so subtract a tile
         // to put that column's left edge against the grid's right edge.
         NODE_ORIGIN_X(node) = (u16)(rightmost / 4 - 16);
-        dl = run_edge_pass(dl, node, draw, leftmost, 0, limit);
+        dl = run_edge_pass(dl, node, draw, leftmost, 0, limit, rightmost & 3);
 
         for (cmd = appended; cmd < (GfxCmd *)dl; cmd++) {
             if ((cmd->w0 >> 24) == OP_TEXRECT && RECT_XH(cmd) > edge) {
@@ -517,7 +590,8 @@ RECOMP_PATCH void *func_800D48F4_58FB14(void *dl, void *node) {
             GfxCmd *grid;
 
             if (stretch) {
-                dl = set_rect_aspect((GfxCmd *)dl, G_EX_ASPECT_STRETCH);
+                dl = set_backdrop_mode((GfxCmd *)dl, G_EX_ASPECT_ADJUST,
+                                       G_EX_ORIGIN_LEFT, G_EX_ASPECT_STRETCH);
             }
 
             grid = (GfxCmd *)dl;
@@ -525,7 +599,8 @@ RECOMP_PATCH void *func_800D48F4_58FB14(void *dl, void *node) {
 
             if (stretch) {
                 dl = draw_backdrop_edges(dl, node, draw, grid, (GfxCmd *)dl);
-                dl = set_rect_aspect((GfxCmd *)dl, G_EX_ASPECT_AUTO);
+                dl = set_backdrop_mode((GfxCmd *)dl, G_EX_ASPECT_AUTO,
+                                       G_EX_ORIGIN_NONE, G_EX_ASPECT_AUTO);
             }
         }
     }

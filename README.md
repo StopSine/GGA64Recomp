@@ -14,6 +14,7 @@ This is a work in progress, not a finished port. Goemon's Great Adventure has no
 * Boots and plays, with controls and audio
 * Saving, via the Controller Pak backed by the save file
 * Widescreen in-level, on the world map, and for the screen fades, with the vertical overscan padding removed
+* Level backgrounds fill a widescreen frame at their original proportions, showing more of the artwork rather than a stretched copy of it
 * Aspect ratio can be changed while playing and takes effect immediately
 * 4:3 is preserved and unaffected by the widescreen patches
 
@@ -87,7 +88,7 @@ You'll probably also want to change the default behavior so that you don't need 
 Yes, if you place a file named `portable.txt` in the same folder as the executable then this project will run in portable mode. In portable mode, the save files, config files, and mods are placed in the same folder as the executable.
 
 ## Known Issues
-* In widescreen, the flat background of most levels can appear and disappear at the left and right edges of the screen. The background is painted into a window fixed at 4:3, and the artwork scrolls within that window rather than the window growing, so the extra width a wider display gives has nothing drawn in it. The artwork itself does extend further, but widening the window is not reachable from outside the routine that draws it. Terrain and platform pop-in, which had a separate cause, is fixed. Use the original aspect ratio to avoid it.
+* Widescreen support for the level backgrounds depends on an unmerged RT64 change ([rt64/rt64#269](https://github.com/rt64/rt64/pull/269)), which `lib/rt64` is currently pinned to. Building against plain upstream RT64 instead will leave those backgrounds confined to a 4:3 window in the centre of the screen.
 * Overlays such as MSI Afterburner and other software such as Wallpaper Engine can cause performance issues with this project that prevent the game from rendering correctly. Disabling such software is recommended.
 
 ## Building
