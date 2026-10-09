@@ -356,6 +356,7 @@ std::vector<recomp::GameEntry> supported_games = {
         // Matched as a prefix against the ROM header at 0x20, which reads
         // "GOEMONS GREAT ADV   ".
         .internal_name = "GOEMONS GREAT ADV",
+        .display_name = "GOEMONS GREAT ADVENTURES",
         .game_id = u8"gga.us",
         .mod_game_id = "gga",
         .save_type = recomp::SaveType::AllowAll,
@@ -686,8 +687,6 @@ int main(int argc, char** argv) {
     REGISTER_FUNC(recomp_get_bgm_volume);
     REGISTER_FUNC(recomp_get_se_volume);
     REGISTER_FUNC(recomp_get_gyro_deltas);
-    REGISTER_FUNC(recomp_show_message);
-    REGISTER_FUNC(recomp_dump_scene_graph);
     REGISTER_FUNC(recomp_get_mouse_deltas);
     REGISTER_FUNC(recomp_get_inverted_axes);
     REGISTER_FUNC(recomp_get_analog_inverted_axes);
@@ -752,18 +751,18 @@ int main(int argc, char** argv) {
     // Register the .rtz texture pack file format with the previous content type as its only allowed content type.
     recomp::mods::register_mod_container_type("rtz", std::vector{ texture_pack_content_type_id }, false);
 
-    recomp::start(
-        project_version,
-        {},
-        rsp_callbacks,
-        renderer_callbacks,
-        audio_callbacks,
-        input_callbacks,
-        gfx_callbacks,
-        thread_callbacks,
-        error_handling_callbacks,
-        threads_callbacks
-    );
+    recomp::Configuration configuration{
+        .project_version = project_version,
+        .window_handle = {},
+        .rsp_callbacks = rsp_callbacks,
+        .renderer_callbacks = renderer_callbacks,
+        .audio_callbacks = audio_callbacks,
+        .input_callbacks = input_callbacks,
+        .gfx_callbacks = gfx_callbacks,
+        .threads_callbacks = threads_callbacks
+    };
+
+    recomp::start(configuration);
 
     NFD_Quit();
 
