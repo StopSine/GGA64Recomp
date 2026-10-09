@@ -191,7 +191,7 @@ typedef struct {
 
 typedef void *(*node_draw_func)(void *dl, void *node);
 
-extern u8 D_80172F88[];  // draw callbacks, one entry per node type, stride 0x1C
+extern u8 scenegraph_draw_callbacks[];  // one entry per node type, stride 0x1C
 
 #define NODE_FLAGS(n)   (*(u16 *)((u8 *)(n) + 0x00))
 #define NODE_TYPE(n)    (*(s16 *)((u8 *)(n) + 0x02))
@@ -582,7 +582,7 @@ RECOMP_PATCH void *func_800D48F4_58FB14(void *dl, void *node) {
 
     if (NODE_FLAGS(node) & 0x2) {
         node_draw_func draw =
-            *(node_draw_func *)&D_80172F88[NODE_TYPE(node) * 0x1C];
+            *(node_draw_func *)&scenegraph_draw_callbacks[NODE_TYPE(node) * 0x1C];
 
         if (draw != NULL) {
             int stretch = is_level_backdrop(node) && widescreen_active();

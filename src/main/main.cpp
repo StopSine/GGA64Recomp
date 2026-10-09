@@ -27,11 +27,15 @@
 #undef Always
 #endif
 
-#include "recomp_ui.h"
-#include "recomp_input.h"
+#include "recompui/recompui.h"
+#include "recompui/config.h"
+#include "recompui/renderer.h"
+#include "recompui/program_config.h"
+#include "util/file.h"
+#include "recompinput/recompinput.h"
+#include "recompinput/input_events.h"
+#include "recompinput/profiles.h"
 #include "goemon_config.h"
-#include "goemon_sound.h"
-#include "goemon_render.h"
 #include "goemon_support.h"
 #include "goemon_game.h"
 #include "recomp_data.h"
@@ -44,6 +48,7 @@
 #include "../../patches/input.h"
 #include "../../patches/sound.h"
 #include "../../patches/misc_funcs.h"
+#include "../../patches/ui_funcs.h"
 
 // #include "mods/mm_recomp_dpad_builtin.h"
 
@@ -175,7 +180,7 @@ ultramodern::renderer::WindowHandle create_window(ultramodern::gfx_callbacks_t::
 }
 
 void update_gfx(void*) {
-    recomp::handle_events();
+    recompinput::handle_events();
 }
 
 static SDL_AudioCVT audio_convert;
@@ -217,7 +222,7 @@ void queue_samples(int16_t* audio_data, size_t sample_count) {
 
     // Convert the audio from 16-bit values to floats and swap the audio channels into the
     // swap buffer to correct for the address xor caused by endianness handling.
-    float cur_main_volume = goemon64::get_main_volume() / 100.0f; // Get the current main volume, normalized to 0.0-1.0.
+    float cur_main_volume = static_cast<float>(recompui::config::sound::get_main_volume()) / 100.0f; // Get the current main volume, normalized to 0.0-1.0.
     for (size_t i = 0; i < sample_count; i += input_channels) {
         swap_buffer[i + 0 + duplicated_input_frames * input_channels] = audio_data[i + 1] * (0.5f / 32768.0f) * cur_main_volume;
         swap_buffer[i + 1 + duplicated_input_frames * input_channels] = audio_data[i + 0] * (0.5f / 32768.0f) * cur_main_volume;
@@ -544,20 +549,66 @@ void release_preload(PreloadContext& context) {
 #endif
 
 void enable_texture_pack(recomp::mods::ModContext& context, const recomp::mods::ModHandle& mod) {
-    goemon64::renderer::enable_texture_pack(context, mod);
+    recompui::renderer::enable_texture_pack(context, mod);
 }
 
 void disable_texture_pack(recomp::mods::ModContext&, const recomp::mods::ModHandle& mod) {
-    goemon64::renderer::disable_texture_pack(mod);
+    recompui::renderer::disable_texture_pack(mod);
 }
 
 void reorder_texture_pack(recomp::mods::ModContext&) {
-    goemon64::renderer::trigger_texture_pack_update();
+    recompui::renderer::trigger_texture_pack_update();
+}
+
+void on_launcher_init(recompui::LauncherMenu* menu) {
+    recompui::GameOptionsMenu* game_options_menu = menu->init_game_options_menu(
+        supported_games[0].game_id,
+        supported_games[0].mod_game_id,
+        supported_games[0].display_name,
+        supported_games[0].thumbnail_bytes,
+        recompui::GameOptionsMenuLayout::Right
+    );
+    recompui::update_game_mod_id(supported_games[0].mod_game_id);
+    game_options_menu->add_default_options();
+
+    // The default title is one centred Header1 in the primary colour. GGA's is
+    // two right-justified lines in white, with the program name above the game.
+    menu->remove_default_title();
+
+    recompui::ContextId context = recompui::get_current_context();
+    recompui::Element* title_wrapper = context.create_element<recompui::Element>(menu->get_menu_container());
+    title_wrapper->set_position(recompui::Position::Absolute);
+    title_wrapper->set_top(96.0f);
+    title_wrapper->set_right(96.0f);
+    title_wrapper->set_width_auto();
+    title_wrapper->set_height_auto();
+    title_wrapper->set_display(recompui::Display::Flex);
+    title_wrapper->set_flex_direction(recompui::FlexDirection::Column);
+    title_wrapper->set_align_items(recompui::AlignItems::FlexEnd);
+
+    recompui::Label* program_label = context.create_element<recompui::Label>(
+        title_wrapper, "GGA 64: Recompiled", recompui::theme::Typography::Header3);
+    program_label->set_color(recompui::theme::color::Text);
+    program_label->set_text_align(recompui::TextAlign::Right);
+    program_label->set_margin_bottom(6.0f);
+
+    recompui::Label* game_label = context.create_element<recompui::Label>(
+        title_wrapper, "Goemon's Great Adventure", recompui::theme::Typography::Header1);
+    game_label->set_color(recompui::theme::color::Text);
+    game_label->set_text_align(recompui::TextAlign::Right);
+    game_label->set_margin_top(6.0f);
+
+    goemon64::launcher_animation_setup(menu);
 }
 
 #define REGISTER_FUNC(name) recomp::overlays::register_base_export(#name, name)
 
 int main(int argc, char** argv) {
+    // recompui::file::get_app_folder_path() reads these, and the log path below
+    // is the first thing to need it.
+    recompui::programconfig::set_program_name(std::string{goemon64::program_name});
+    recompui::programconfig::set_program_id(std::u8string{goemon64::program_id});
+
     // A release build is a GUI subsystem app, so a normal launch has no console
     // and every diagnostic is discarded -- including the ones that explain a
     // crash. Send them to a file instead when nothing else is listening. A
@@ -569,7 +620,7 @@ int main(int argc, char** argv) {
 
         if (err_handle == nullptr || err_handle == INVALID_HANDLE_VALUE) {
             std::error_code ec{};
-            std::filesystem::path log_path = goemon64::get_app_folder_path();
+            std::filesystem::path log_path = recompui::file::get_app_folder_path();
 
             if (!log_path.empty()) {
                 std::filesystem::create_directories(log_path, ec);
@@ -663,12 +714,19 @@ int main(int argc, char** argv) {
     reset_audio(48000);
 
     // Source controller mappings file
-    std::u8string controller_db_path = (goemon64::get_program_path() / "recompcontrollerdb.txt").u8string();
+    std::u8string controller_db_path = (recompui::file::get_program_path() / "recompcontrollerdb.txt").u8string();
     if (SDL_GameControllerAddMappingsFromFile(reinterpret_cast<const char *>(controller_db_path.c_str())) < 0) {
         fprintf(stderr, "Failed to load controller mappings: %s\n", SDL_GetError());
     }
 
-    recomp::register_config_path(goemon64::get_app_folder_path());
+    recompui::register_primary_font("LatoLatin-Regular.ttf", "LatoLatin");
+    recompui::register_extra_font("LatoLatin-Italic.ttf");
+    recompui::register_extra_font("LatoLatin-Bold.ttf");
+    recompui::register_extra_font("LatoLatin-BoldItalic.ttf");
+    recompui::register_extra_font("InterVariable.ttf");
+    recompui::register_extra_font("NotoEmoji-Regular.ttf");
+
+    recomp::register_config_path(recompui::file::get_app_folder_path());
 
     // Register supported games and patches
     for (const auto& game : supported_games) {
@@ -680,30 +738,34 @@ int main(int argc, char** argv) {
     REGISTER_FUNC(recomp_get_window_resolution);
     REGISTER_FUNC(recomp_get_target_aspect_ratio);
     REGISTER_FUNC(recomp_get_target_framerate);
-    // REGISTER_FUNC(recomp_get_autosave_enabled);
-    REGISTER_FUNC(recomp_get_analog_cam_enabled);
     REGISTER_FUNC(recomp_get_camera_inputs);
-    REGISTER_FUNC(recomp_get_targeting_mode);
     REGISTER_FUNC(recomp_get_bgm_volume);
     REGISTER_FUNC(recomp_get_se_volume);
-    REGISTER_FUNC(recomp_get_gyro_deltas);
     REGISTER_FUNC(recomp_get_mouse_deltas);
-    REGISTER_FUNC(recomp_get_inverted_axes);
-    REGISTER_FUNC(recomp_get_analog_inverted_axes);
+    REGISTER_FUNC(recomp_run_ui_callbacks);
     recompui::register_ui_exports();
     recomputil::register_data_api_exports();
+    goemon64::set_custom_theme();
 
     goemon64::register_overlays();
     goemon64::register_patches();
     recomputil::init_extended_actor_data();
-    goemon64::load_config();
+
+    recompinput::players::set_single_player_mode(true);
+    goemon64::init_config();
+
+    recompui::register_launcher_init_callback(on_launcher_init);
+    recompui::register_launcher_update_callback(goemon64::launcher_animation_update);
 
     recomp::rsp::callbacks_t rsp_callbacks{
         .get_rsp_microcode = get_rsp_microcode,
     };
 
     ultramodern::renderer::callbacks_t renderer_callbacks{
-        .create_render_context = goemon64::renderer::create_render_context,
+        .create_render_context = [](uint8_t* rdram, ultramodern::renderer::WindowHandle window_handle, bool developer_mode) {
+            auto presentation_mode = ultramodern::renderer::PresentationMode::PresentEarly;
+            return recompui::renderer::create_render_context(rdram, window_handle, presentation_mode, developer_mode);
+        },
     };
 
     ultramodern::gfx_callbacks_t gfx_callbacks{
@@ -719,15 +781,14 @@ int main(int argc, char** argv) {
     };
 
     ultramodern::input::callbacks_t input_callbacks{
-        .poll_input = recomp::poll_inputs,
-        .get_input = recomp::get_n64_input,
-        .set_rumble = recomp::set_rumble,
-        .get_connected_device_info = recomp::get_connected_device_info,
+        .poll_input = recompinput::poll_inputs,
+        .get_input = recompinput::profiles::get_n64_input,
+        .set_rumble = recompinput::set_rumble,
+        .get_connected_device_info = goemon64::get_connected_device_info,
     };
 
     ultramodern::events::callbacks_t thread_callbacks{
-        .vi_callback = recomp::update_rumble,
-        .gfx_init_callback = recompui::update_supported_options,
+        .vi_callback = recompinput::update_rumble,
     };
 
     ultramodern::error_handling::callbacks_t error_handling_callbacks{
@@ -759,6 +820,8 @@ int main(int argc, char** argv) {
         .audio_callbacks = audio_callbacks,
         .input_callbacks = input_callbacks,
         .gfx_callbacks = gfx_callbacks,
+        .events_callbacks = thread_callbacks,
+        .error_handling_callbacks = error_handling_callbacks,
         .threads_callbacks = threads_callbacks
     };
 

@@ -1,25 +1,6 @@
 #include "patch_helpers.h"
 
 DECLARE_FUNC(float, recomp_get_target_aspect_ratio, float);
-DECLARE_FUNC(void, recomp_show_message, const char* data, u32 size);
-
-// Print each actor's name the first time one comes inside its own activation
-// radius, to match these names to what is on screen. Diagnostic; set to 0 to
-// silence.
-#define ANNOUNCE_ACTORS 1
-
-#if ANNOUNCE_ACTORS
-#define ANNOUNCE(name, radius, d)                                  \
-    do {                                                           \
-        static int announced = 0;                                  \
-        if (!announced && (d) < (radius)) {                        \
-            announced = 1;                                         \
-            recomp_show_message(name, sizeof(name) - 1);           \
-        }                                                          \
-    } while (0)
-#else
-#define ANNOUNCE(name, radius, d) ((void)0)
-#endif
 
 // Core actor and player helpers every actor overlay calls.
 //
@@ -106,63 +87,34 @@ static float distance_to_player(void *actor, s32 player_index) {
 }
 
 // @recomp Scale each actor's distance to a player by the aspect ratio, so its
-// activation radius matches what the player can see. Overlay functions cannot
-// be named -- every overlay links at 0x08000000, so an address there is
-// ambiguous across all 311 of them -- hence the generated names, one per actor.
-//
-// Radii these move, and why two of them use the guarded form:
-//
-//   gyuki      file_169  100.0
-//   hellbat    file_172  100.0
-//   deadhand   file_173  130.0, and atan2f(20.0, distance) at two sites, so
-//                        the distance is also an angle input -- guarded, which
-//                        confines the angle shift to long range
-//   nuppe      file_174   70.0
-//   monoeye    file_176   80.0
-//   area3kappa file_178  100.0 at three sites, plus a 20.0 proximity timer
-//                        that must not move -- guarded
-
-// ANNOUNCE takes the already shortened distance and each actor's own radius, so
-// it fires on the same frame the game's gate passes rather than later.
+// activation radius matches what the player can see.
 
 RECOMP_PATCH f32 func_08000128_7DD948(void *actor, s32 player_index) {  // gyuki
     f32 d = shorten(distance_to_player(actor, player_index));
-    ANNOUNCE("gyuki", 100.0f, d);
     return d;
 }
 
 RECOMP_PATCH f32 func_08000184_7DFD04(void *actor, s32 player_index) {  // hellbat
     f32 d = shorten(distance_to_player(actor, player_index));
-    ANNOUNCE("hellbat", 100.0f, d);
     return d;
 }
 
 RECOMP_PATCH f32 func_080000FC_7E1F8C(void *actor, s32 player_index) {  // deadhand
     f32 d = shorten_far_only(distance_to_player(actor, player_index));
-    ANNOUNCE("deadhand", 130.0f, d);
     return d;
 }
 
 RECOMP_PATCH f32 func_08000178_7E32A8(void *actor, s32 player_index) {  // nuppe
     f32 d = shorten(distance_to_player(actor, player_index));
-    ANNOUNCE("nuppe", 70.0f, d);
     return d;
 }
 
-// saburo (file_175, func_08000128_7E4728) is deliberately left unpatched. Its
-// 80.0 is an attack trigger, not an activation radius: it charges the player and
-// explodes on reaching them, so a widened radius makes it charge from too far
-// away rather than fixing anything. Both of its call sites use 80.0, so the
-// guarded form cannot separate the charge from the wake-up either.
-
 RECOMP_PATCH f32 func_08000178_7E5CF8(void *actor, s32 player_index) {  // monoeye
     f32 d = shorten(distance_to_player(actor, player_index));
-    ANNOUNCE("monoeye", 80.0f, d);
     return d;
 }
 
 RECOMP_PATCH f32 func_08000128_7E90C8(void *actor, s32 player_index) {  // area3kappa
     f32 d = shorten_far_only(distance_to_player(actor, player_index));
-    ANNOUNCE("area3kappa", 100.0f, d);
     return d;
 }

@@ -5,6 +5,9 @@
 
 DECLARE_FUNC(void, recomp_load_overlays, u32 rom, void* ram, u32 size);
 DECLARE_FUNC(void, recomp_unload_overlays, void *vram_addr, u32 size);
+//DECLARE_FUNC(void, recomp_apply_overlay_relocs, u32 rom, void* ram, u32 size);
+//DECLARE_FUNC(void, recomp_register_static_sections);
+//DECLARE_FUNC(void, recomp_log_file_load, u32 slot, u32 addr, u32 file_id, u32 rom);
 DECLARE_FUNC(void, recomp_puts, const char* data, u32 size);
 DECLARE_FUNC(void, recomp_show_message, const char* data, u32 size);
 DECLARE_FUNC(void, recomp_dump_scene_graph);
@@ -13,6 +16,5 @@ DECLARE_FUNC(void, recomp_handle_quicksave_actions, OSMesgQueue* enter_mq, OSMes
 DECLARE_FUNC(void, recomp_handle_quicksave_actions_main, OSMesgQueue* enter_mq, OSMesgQueue* exit_mq);
 DECLARE_FUNC(u16, recomp_get_pending_warp);
 DECLARE_FUNC(u32, recomp_get_pending_set_time);
-DECLARE_FUNC(s32, recomp_get_autosave_enabled);
 
 #endif
