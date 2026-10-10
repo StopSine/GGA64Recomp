@@ -812,6 +812,9 @@ int main(int argc, char** argv) {
     // Register the .rtz texture pack file format with the previous content type as its only allowed content type.
     recomp::mods::register_mod_container_type("rtz", std::vector{ texture_pack_content_type_id }, false);
 
+    ultramodern::MessageQueueControl message_queue_control{};
+    message_queue_control.requeue_pi = true;
+
     recomp::Configuration configuration{
         .project_version = project_version,
         .window_handle = {},
@@ -822,7 +825,8 @@ int main(int argc, char** argv) {
         .gfx_callbacks = gfx_callbacks,
         .events_callbacks = thread_callbacks,
         .error_handling_callbacks = error_handling_callbacks,
-        .threads_callbacks = threads_callbacks
+        .threads_callbacks = threads_callbacks,
+        .message_queue_control = message_queue_control
     };
 
     recomp::start(configuration);

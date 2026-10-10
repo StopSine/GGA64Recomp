@@ -69,7 +69,7 @@ static uint8_t pak_data_crc(const uint8_t* data) {
 // `replay` is set when re-answering the standing block for an OS_READ. Hardware
 // performed any write once, when the block was sent; repeating it would re-run
 // pak writes 60 times a second for as long as that block stood.
-static void joybus_process(bool replay) {
+static void joybus_process(uint8_t* rdram, bool replay) {
     int channel = 0;
     size_t i = 0;
 
@@ -184,16 +184,18 @@ extern "C" void __osSiRawStartDma_recomp(uint8_t* rdram, recomp_context* ctx) {
     s32 dir = _arg<0, s32>(rdram, ctx);
     PTR(void) dram_addr = _arg<1, PTR(void)>(rdram, ctx);
 
+    goemon64::value_search_poll(rdram);
+
     if (dir == SI_DIR_WRITE) {
         for (size_t i = 0; i < sizeof(pif_ram); i++) {
             pif_cmd[i] = MEM_B((int32_t)i, dram_addr);
         }
         memcpy(pif_ram, pif_cmd, sizeof(pif_ram));
-        joybus_process(false);
+        joybus_process(rdram, false);
     }
     else {
         memcpy(pif_ram, pif_cmd, sizeof(pif_ram));
-        joybus_process(true);
+        joybus_process(rdram, true);
         for (size_t i = 0; i < sizeof(pif_ram); i++) {
             MEM_B((int32_t)i, dram_addr) = pif_ram[i];
         }

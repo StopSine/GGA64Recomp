@@ -12,6 +12,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+add_compile_definitions(
+    RECOMP_OVERRIDES_HEADER="${CMAKE_SOURCE_DIR}/lib/N64ModernRuntime/ultramodern/include/ultramodern/recomp_overrides.h"
+)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-everything /W4")
     
@@ -166,6 +170,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/game/recomp_data_api.cpp
     ${CMAKE_SOURCE_DIR}/src/game/rom_decompression.cpp
     ${CMAKE_SOURCE_DIR}/src/game/joybus.cpp
+    ${CMAKE_SOURCE_DIR}/src/game/value_search.cpp
     ${CMAKE_SOURCE_DIR}/src/game/unknown_symbols.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
