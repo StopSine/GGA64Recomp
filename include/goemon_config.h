@@ -10,6 +10,12 @@ namespace goemon64 {
     constexpr std::string_view program_name = "Goemon's Great Adventure: Recompiled";
 
     void init_config();
+    bool get_noclip_enabled();
+    bool get_speed_boost_enabled();
+    bool get_invincible_enabled();
+
+    void toggle_noclip();
+    void toggle_invincible();
 };
 
 #endif

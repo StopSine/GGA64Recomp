@@ -185,6 +185,7 @@ extern "C" void __osSiRawStartDma_recomp(uint8_t* rdram, recomp_context* ctx) {
     PTR(void) dram_addr = _arg<1, PTR(void)>(rdram, ctx);
 
     goemon64::value_search_poll(rdram);
+    goemon64::debug_move_poll(rdram);
 
     if (dir == SI_DIR_WRITE) {
         for (size_t i = 0; i < sizeof(pif_ram); i++) {

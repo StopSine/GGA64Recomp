@@ -171,6 +171,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/game/rom_decompression.cpp
     ${CMAKE_SOURCE_DIR}/src/game/joybus.cpp
     ${CMAKE_SOURCE_DIR}/src/game/value_search.cpp
+    ${CMAKE_SOURCE_DIR}/src/game/debug_move.cpp
     ${CMAKE_SOURCE_DIR}/src/game/unknown_symbols.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp

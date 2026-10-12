@@ -55,11 +55,12 @@ constexpr IgnoredRange ignored_rdram_ranges[] = {
     { 0x88290, 0x88290 },  // p2 weapon
     { 0x88292, 0x88293 },  // p2 money
     { 0x88297, 0x88297 },  // p2 held item
-    { 0x882A8, 0x882A9 },  // Lost'n Road cleared, road in from the Wiseman
-    { 0x882AC, 0x882AF },  // Ringbell Pass, Digadig Gold Mine, both roads
-    { 0x882B0, 0x882B1 },  // Lost'n Road, Home of the Wiseman entrances
-    { 0x882B3, 0x882B9 },  // Edo Castle road, gate art, entrances, 2 Ryugu roads
-    { 0x882BD, 0x882BF },  // Ryugu roads to Frog Mountain and Otohime Town
+    { 0x882A8, 0x882A9 },  // Edo access: Lost'n Town, Lost'n Road
+    { 0x882AC, 0x882AF },  // Edo access: checkpoint x2, Digadig, Ringbell
+    { 0x882B0, 0x882B1 },  // Edo cleared: Lost'n Road, Home of the Wiseman
+    { 0x882B3, 0x882B9 },  // Edo Castle access, doors, 3 cleared, 2 Ryugu
+    { 0x882BB, 0x882BB },  // Edo Castle cleared
+    { 0x882BD, 0x882BF },  // Ryugu access bytes
     { 0x88343, 0x88343 },  // changes continuously, unidentified
     { 0x8836C, 0x8839A },  // position and camera floats
 };

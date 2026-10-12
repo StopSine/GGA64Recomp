@@ -7,6 +7,7 @@
 #include "recompinput/recompinput.h"
 #include "recompui/recompui.h"
 #include "goemon_sound.h"
+#include "goemon_game.h"
 #include "librecomp/helpers.hpp"
 #include "../patches/input.h"
 #include "../patches/graphics.h"
@@ -61,6 +62,10 @@ extern "C" void recomp_get_window_resolution(uint8_t* rdram, recomp_context* ctx
 
     MEM_W(0, width_out) = (u32)width;
     MEM_W(0, height_out) = (u32)height;
+}
+
+extern "C" void recomp_noclip_enabled(uint8_t* rdram, recomp_context* ctx) {
+    _return(ctx, (s32)goemon64::noclip_is_enabled());
 }
 
 extern "C" void recomp_get_target_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
